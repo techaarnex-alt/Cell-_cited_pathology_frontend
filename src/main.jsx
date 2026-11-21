@@ -280,10 +280,27 @@ const mergeCatalogue = (savedTests = [], applyCurrentReferences = false) => {
 const date = () => new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date());
 const makeId = (prefix, count) => `${prefix}-${String(count + 1).padStart(4, '0')}`;
 const dateFromRecord = (value) => {
-  const parts = String(value || '').split('/').map(Number);
-  if (parts.length === 3 && parts.every(Number.isFinite)) return new Date(parts[2], parts[1] - 1, parts[0]);
+  if (!value) return null;
+  if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+  const str = String(value).trim();
+  const parts = str.split(/[/.-]/).map(Number);
+  if (parts.length === 3 && parts.every(Number.isFinite)) {
+    if (parts[0] > 1000) return new Date(parts[0], parts[1] - 1, parts[2]);
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+  }
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+const isToday = (value) => {
+  if (!value) return false;
+  const todayFormatted = date();
+  if (typeof value === 'string' && value.trim() === todayFormatted) return true;
+  const d = dateFromRecord(value);
+  if (!d || Number.isNaN(d.getTime())) return false;
+  const now = new Date();
+  return d.getDate() === now.getDate() &&
+         d.getMonth() === now.getMonth() &&
+         d.getFullYear() === now.getFullYear();
 };
 const startOfDay = (value) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
 const earningsForPeriod = (reports, doctorId, since) => reports.reduce((total, report) => {
@@ -854,6 +871,8 @@ function App() {
             doctorId: p.doctorId?._id || p.doctorId || '',
             reference: p.doctorNameSnapshot || p.doctorId?.name || 'Self',
             address: p.address || '',
+            registeredOn: p.registeredOn || (p.createdAt ? new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(p.createdAt)) : date()),
+            createdAt: p.createdAt,
           }));
           changed = true;
         }
@@ -872,6 +891,8 @@ function App() {
               patientId: r.patientSnapshot?.patientNumber || r.patientId?._id || r.patientId,
               status: r.status,
               createdOn: new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(r.createdAt)),
+              registeredOn: r.registeredOn || (r.createdAt ? new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(r.createdAt)) : date()),
+              createdAt: r.createdAt,
               reportedOn: r.reportedOn || existingLocal?.reportedOn || '',
               fee: reportFee,
               discount: reportDiscount,
@@ -960,7 +981,7 @@ function App() {
   }, [loggedIn]);
 
   useEffect(() => {
-    if (loggedIn && ['patients', 'newreport', 'tests', 'doctors', 'reports'].includes(view)) {
+    if (loggedIn && ['dashboard', 'patients', 'newreport', 'tests', 'doctors', 'reports', 'billing'].includes(view)) {
       syncWithBackend();
     }
   }, [view, loggedIn]);
@@ -970,6 +991,16 @@ function App() {
   const invoicePatient = invoiceReport && data.patients.find((patient) => patient.id === invoiceReport.patientId);
   const recordPatient = data.patients.find((patient) => patient.id === patientRecordId);
   const finalReports = data.reports.filter((report) => report.status === 'Final');
+  const totalPatients = data.patients.length;
+  const todayPatients = data.patients.filter((p) => isToday(p.registeredOn || p.createdOn || p.createdAt)).length;
+  const todayBookings = data.reports.filter((r) => isToday(r.registeredOn || r.createdOn || r.createdAt)).length;
+  const pendingReports = data.reports.filter((report) => report.status === 'Draft' || report.status === 'Pending').length;
+  const todayRevenue = data.reports.reduce((total, r) => {
+    const paid = Number(r.paid || 0);
+    if (paid <= 0) return total;
+    const isPaidToday = isToday(r.paidOn) || (!r.paidOn && isToday(r.registeredOn || r.createdOn || r.createdAt));
+    return isPaidToday ? total + paid : total;
+  }, 0);
   const catalogue = data.tests;
   const chosenInvestigations = (form) => {
     const individuallySelected = form.getAll('tests');
@@ -1716,7 +1747,38 @@ function App() {
     <aside><div className="brand"><CellCitedMark compact /></div><nav>{[['dashboard', 'Dashboard'], ['patients', 'Patients & Registration'], ['newreport', 'Test Booking'], ['billing', 'Billing'], ['results', 'Result entry'], ['reports', 'Reports'], ['doctors', 'Doctors'], ['tests', 'Test catalogue'], ['business', 'Business report'], ['profile', 'Setting ']].map(([key, label]) => <button key={key} className={view === key ? 'active' : ''} onClick={() => setView(key)}><NavIcon name={key} /><span>{label}</span></button>)}</nav><button className="logout" onClick={handleLogout}><NavIcon name="logout" /><span>Log out</span></button><p className="aarnex-credit">Created &amp; Designed by <b>Aarnex Tech</b></p></aside>
     <main className="workspace">
       <header className="app-topbar"><div><span className="topbar-kicker">CCPL · BARABANKI</span><b>Laboratory information system</b></div><div className="topbar-actions"><span className="secure-badge">● Secure local workspace</span><span>{date()}</span></div></header>
-      {view === 'dashboard' && <><header className="page-head"><div><h1 style={{ color: '#1d2c62', letterSpacing: '0.01em', margin: '4px 0 7px' }}>OPERATIONS / OVERVIEW</h1></div><button onClick={() => setView('patients')}>+ New patient</button></header><section className="metrics"><article><b>{data.patients.length}</b><span>Registered patients</span></article><article><b>{data.reports.filter((report) => report.status === 'Draft').length}</b><span>Draft reports</span></article><article><b>{finalReports.length}</b><span>Ready to print</span></article></section><section className="panel"><h2>Recent reports</h2><ReportList reports={data.reports.slice(0, 6)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} /></section></>}
+      {view === 'dashboard' && <>
+        <header className="page-head">
+          <div><h1 style={{ color: '#1d2c62', letterSpacing: '0.01em', margin: '4px 0 7px' }}>OPERATIONS / OVERVIEW</h1></div>
+          <button onClick={() => setView('patients')}>+ New patient</button>
+        </header>
+        <section className="metrics dashboard-metrics">
+          <article onClick={() => setView('patients')} style={{ cursor: 'pointer' }} title="View all patients">
+            <b>{totalPatients}</b>
+            <span>Total Patient</span>
+          </article>
+          <article onClick={() => setView('patients')} style={{ cursor: 'pointer' }} title="View today's patients">
+            <b>{todayPatients}</b>
+            <span>Today Patient</span>
+          </article>
+          <article onClick={() => setView('reports')} style={{ cursor: 'pointer' }} title="View today's bookings">
+            <b>{todayBookings}</b>
+            <span>Today Booking</span>
+          </article>
+          <article onClick={() => setView('results')} style={{ cursor: 'pointer' }} title="View and enter results for pending reports">
+            <b>{pendingReports}</b>
+            <span>Pending Report</span>
+          </article>
+          <article onClick={() => setView('billing')} style={{ cursor: 'pointer' }} title="View billing and revenue">
+            <b>₹{todayRevenue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</b>
+            <span>Today Revenue</span>
+          </article>
+        </section>
+        <section className="panel">
+          <h2>Recent reports</h2>
+          <ReportList reports={data.reports.slice(0, 6)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} />
+        </section>
+      </>}
       {view === 'patients' && <><header className="page-head"><div><span className="eyebrow">PATIENTS</span>  </div><button onClick={() => registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>+ Register patient</button></header><section className="panel patient-register"><header><div><h2>Registered patients</h2><p>Find a patient by name, patient ID or mobile number.</p></div></header><label className="patient-search">Search by patient ID or name<input value={patientSearch} onChange={(event) => setPatientSearch(event.target.value)} placeholder="Search by patient name, ID or mobile number" /></label><PatientList patients={data.patients} reports={data.reports} search={patientSearch} onOpen={(patient) => { setPatientRecordId(patient.id); setView('patientrecord'); }} onNewReport={(patient) => { setNewReportPatientId(patient.id); setView('newreport'); }} /></section><form ref={registrationRef} className="panel patient-form patient-visit-form" onSubmit={registerPatient}><h2>Patient registration</h2><div className="form-grid patient-details-grid"><label>Title<select name="title" defaultValue="" onChange={(event) => setRegistrationGender(genderForTitle(event.target.value))}><option value="">Select title</option><option>Mr.</option><option>Mrs.</option><option>Ms.</option><option>Master</option><option>Baby</option><option>Dr.</option></select></label><label>Patient name<input name="name" required /></label><label>Age<input name="age" type="number" min="0" required /></label><label>Age unit<select name="ageUnit" defaultValue="Years"><option>Years</option><option>Months</option><option>Days</option></select></label><label>Gender<select name="gender" value={registrationGender} onChange={(event) => setRegistrationGender(event.target.value)} required><option value="" disabled>Select gender</option><option>Female</option><option>Male</option><option>Other</option></select></label><label>Mobile<input name="mobile" type="tel" inputMode="numeric" placeholder="10-digit mobile number" /></label><label>Referred by<select name="doctorId" defaultValue=""><option value="">Self / direct walk-in</option>{data.doctors.map((doctor) => <option value={doctor.id} key={doctor.id}>{doctor.doctorCode} · {doctor.name} ({doctor.referralPercentage}%)</option>)}</select></label><label>Sample type<select name="sampleType" defaultValue="Blood">{SAMPLE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label>Collected on<input name="collectedOn" defaultValue={date()} placeholder="DD/MM/YYYY" /></label><label className="wide">Address<input name="address" placeholder="Patient address (optional)" /></label></div><fieldset className="visit-tests"><legend>Select tests for this visit</legend><p className="field-help">Choose one or more tests. A draft report and billing entry will be created from these selections.</p><InvestigationPicker key={bookingPickerKey} catalogue={catalogue} testGroups={testGroups} booking /></fieldset><button>Save patient</button></form></>}
       {view === 'patientrecord' && recordPatient && <><header className="page-head"><div><span className="eyebrow">PATIENT RECORD</span><h1>{patientName(recordPatient)}</h1><p>{recordPatient.id} · {recordPatient.mobile || 'No mobile number recorded'}</p></div><div><button className="secondary" onClick={() => setView('patients')}>Back to patients</button><button onClick={() => { setNewReportPatientId(recordPatient.id); setView('newreport'); }}>+ Test booking</button></div></header><section className="panel patient-record"><div><span>Patient ID</span><b>{recordPatient.id}</b></div><div><span>Age / gender</span><b>{recordPatient.age} {recordPatient.ageUnit || 'Years'} / {recordPatient.gender}</b></div><div><span>Mobile</span><b>{recordPatient.mobile || '—'}</b></div><div><span>Sample type</span><b>{recordPatient.sampleType || 'Blood'}</b></div><div><span>Registered on</span><b>{recordPatient.registeredOn || '—'}</b></div><div><span>Referred by</span><b>{recordPatient.reference || 'Self'}</b></div><div><span>Address</span><b>{recordPatient.address || '—'}</b></div></section><section className="panel"><h2>Report history</h2><ReportList reports={data.reports.filter((report) => report.patientId === recordPatient.id)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} /></section></>}
       {view === 'newreport' && <><header className="page-head"><div><span className="eyebrow">TEST BOOKING</span> </div></header>
