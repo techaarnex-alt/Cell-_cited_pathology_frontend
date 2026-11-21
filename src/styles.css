@@ -910,6 +910,48 @@ input[disabled] {
   font-size: 12px;
 }
 
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 44px !important;
+}
+
+.toggle-password-btn {
+  position: absolute !important;
+  right: 6px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 6px 8px !important;
+  cursor: pointer !important;
+  color: #64748b !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  width: auto !important;
+  height: auto !important;
+  transition: color 0.15s ease, background-color 0.15s ease !important;
+}
+
+.toggle-password-btn:hover {
+  color: #1e3a8a !important;
+  background-color: rgba(30, 58, 138, 0.08) !important;
+  transform: translateY(-50%) !important;
+}
+
+.toggle-password-btn:active {
+  transform: translateY(-50%) scale(0.95) !important;
+}
+
 .login .cell-cited-mark {
   margin-bottom: 22px;
 }
