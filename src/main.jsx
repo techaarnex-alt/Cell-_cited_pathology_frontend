@@ -2411,9 +2411,9 @@ function SettingsView({ currentUser, labProfile, setNotice, setView }) {
     <div className="settings-page-wrapper">
       <header className="page-head">
         <div>
-          <span className="eyebrow">SYSTEM &amp; SECURITY SETTINGS</span>
-          <h1>Settings</h1>
-          <p>Manage administrator security credentials, reset password, and access controls.</p>
+          <span className="eyebrow">SETTINGS</span>
+          {/* <h1>Settings</h1> */}
+
         </div>
       </header>
 
@@ -2574,7 +2574,7 @@ function SettingsView({ currentUser, labProfile, setNotice, setView }) {
       </section>
 
       {/* System Security Specifications */}
-      <section className="settings-card">
+      {/* <section className="settings-card">
         <div className="settings-card-head">
           <div className="settings-icon-badge" style={{ background: '#ecfdf5', color: '#059669' }}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -2613,7 +2613,7 @@ function SettingsView({ currentUser, labProfile, setNotice, setView }) {
             <b>{labProfile?.code || 'CCPL'}</b>
           </div>
         </div>
-      </section>
+      </section> */}
     </div>
   );
 }
