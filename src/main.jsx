@@ -21,6 +21,36 @@ const SAMPLE_TYPES = [
   'Tissue / Biopsy',
   'Urine',
 ];
+
+const DEFAULT_USER = {
+  id: "6afea8aca66c8e089c37e22f",
+  name: "Super Administrator",
+  username: "admin",
+  email: "admin@cellcited.com",
+  role: "administrator",
+  laboratory: {
+    _id: "6afea89e3c0b9ae4477e9de8",
+    name: "Cell Cited Pathology Lab (CCPL)",
+    code: "CCPL",
+    address: "Shop No. 17, City Trade Centre, Lakhperabagh Chauraha, Barabanki - 225001",
+    phones: [
+      "9554448906",
+      "6307342505",
+      "8601463398"
+    ],
+    email: "ccpath11@gmail.com",
+    medicalCertificate: "CMEE26151240",
+    authorisedSignatory: "Dr. Sanjay Singh, MBBS, MD Pathologist",
+    registrationDetails: "Provisional registration certificate issued by Office of the Chief Medical Officer, Barabanki",
+    letterheadAssetUrl: "/report-letterhead.jpg",
+    watermarkAssetUrl: "/report-watermark.png",
+    timezone: "Asia/Kolkata",
+    isActive: true,
+    createdAt: "2026-11-19T07:43:26.411Z",
+    updatedAt: "2026-11-19T07:43:26.411Z",
+    __v: 0
+  }
+};
 /*
 const DEFAULT_DOCTORS = [
   { id: 'doctor-ps-patel', doctorCode: 'DR-001', name: 'Dr. P.S. Patel', referralPercentage: 60 },
@@ -299,8 +329,8 @@ const isToday = (value) => {
   if (!d || Number.isNaN(d.getTime())) return false;
   const now = new Date();
   return d.getDate() === now.getDate() &&
-         d.getMonth() === now.getMonth() &&
-         d.getFullYear() === now.getFullYear();
+    d.getMonth() === now.getMonth() &&
+    d.getFullYear() === now.getFullYear();
 };
 const startOfDay = (value) => new Date(value.getFullYear(), value.getMonth(), value.getDate());
 const earningsForPeriod = (reports, doctorId, since) => reports.reduce((total, report) => {
@@ -414,6 +444,8 @@ function NavIcon({ name }) {
     business: <><path {...common} d="M4 20V10M10 20V4M16 20v-7M22 20H2" /><path {...common} d="m4 7 5-4 5 4 6-3" /></>,
     doctors: <><path {...common} d="M9 4h6v4a3 3 0 0 1-6 0zM12 11v10M8 14h8M9 21h6" /><path {...common} d="M5 12h2M17 12h2" /></>,
     profile: <><circle {...common} cx="12" cy="12" r="9" /><circle {...common} cx="12" cy="9" r="2.5" /><path {...common} d="M7.8 18c.8-2.1 2.2-3.2 4.2-3.2s3.4 1.1 4.2 3.2" /></>,
+    setting: <><circle {...common} cx="12" cy="12" r="3" /><path {...common} d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
+    settings: <><circle {...common} cx="12" cy="12" r="3" /><path {...common} d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
     logout: <><path {...common} d="M10 4H5v16h5" /><path {...common} d="M13 8l4 4-4 4M8 12h9" /></>,
   };
   return <svg className="nav-icon" viewBox="0 0 24 24" aria-hidden="true">{icons[name]}</svg>;
@@ -654,6 +686,17 @@ function App() {
   const registrationRef = useRef(null);
   const [notice, setNotice] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [authMode, setAuthMode] = useState('login'); // 'login' | 'forgot' | 'reset'
+  const [forgotIdentifier, setForgotIdentifier] = useState('');
+  const [maskedEmail, setMaskedEmail] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authNotice, setAuthNotice] = useState('');
+  const [authNoticeType, setAuthNoticeType] = useState('error');
+  const [loginError, setLoginError] = useState('');
 
   useEffect(() => {
     if (newReportPatientId) {
@@ -781,6 +824,23 @@ function App() {
     return () => clearTimeout(timer);
   }, [notice]);
   const [loggedIn, setLoggedIn] = useState(sessionStorage.getItem('cell-cited-session') === 'active');
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('cell-cited-user');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_USER,
+          ...parsed,
+          laboratory: {
+            ...DEFAULT_USER.laboratory,
+            ...(parsed.laboratory || {}),
+          },
+        };
+      }
+    } catch { }
+    return DEFAULT_USER;
+  });
   const [labProfile, setLabProfile] = useState({
     name: 'Cell Cited Pathology Lab (CCPL)',
     tagline: 'Pathology & Healthcare Diagnostic Centre',
@@ -813,14 +873,27 @@ function App() {
 
   const syncWithBackend = async () => {
     try {
-      const [fetchedPatients, fetchedReports, fetchedDoctors, fetchedTests, fetchedGroups, fetchedLab] = await Promise.all([
+      const [fetchedPatients, fetchedReports, fetchedDoctors, fetchedTests, fetchedGroups, fetchedLab, fetchedMe] = await Promise.all([
         api.getPatients({ limit: 100 }).catch(() => null),
         api.getReports({ limit: 100 }).catch(() => null),
         api.getDoctors().catch(() => null),
         api.getTests().catch(() => null),
         api.getTestGroups().catch(() => null),
         api.getLaboratory().catch(() => null),
+        api.getMe().catch(() => null),
       ]);
+
+      if (fetchedMe) {
+        setCurrentUser((prev) => ({
+          ...prev,
+          ...fetchedMe,
+          laboratory: {
+            ...prev.laboratory,
+            ...(fetchedMe.laboratory || {}),
+          },
+        }));
+        try { sessionStorage.setItem('cell-cited-user', JSON.stringify(fetchedMe)); } catch { }
+      }
 
       if (fetchedLab) {
         setLabProfile({
@@ -1659,19 +1732,148 @@ function App() {
     const values = new FormData(event.currentTarget);
     const username = String(values.get('username') || '').trim();
     const password = String(values.get('password') || '').trim();
+    setLoginError('');
+
+    if (!username || !password) {
+      setLoginError('Please enter username/email and password.');
+      return;
+    }
 
     try {
-      await api.login(username, password);
+      setAuthLoading(true);
+      const loginRes = await api.login(username, password);
+      if (!loginRes || !loginRes.user) {
+        throw new Error('Invalid login response from server.');
+      }
+      setCurrentUser(loginRes.user);
+      if (loginRes.user.laboratory) {
+        const lab = loginRes.user.laboratory;
+        setLabProfile((prev) => ({
+          ...prev,
+          name: lab.name || prev.name,
+          address: lab.address || prev.address,
+          phones: (lab.phones && lab.phones.length) ? lab.phones : prev.phones,
+          email: lab.email || prev.email,
+          certificateNumber: lab.medicalCertificate || prev.certificateNumber,
+          authorisedSignatory: lab.authorisedSignatory || prev.authorisedSignatory,
+          registrationAuthority: lab.registrationDetails || prev.registrationAuthority,
+        }));
+      }
+      sessionStorage.setItem('cell-cited-session', 'active');
       setLoggedIn(true);
+      setLoginError('');
       setNotice('Connected to Cell Cited Pathology Lab (MongoDB Atlas).');
     } catch (err) {
-      if (username === 'admin' && password === 'CCPL@2026') {
-        sessionStorage.setItem('cell-cited-session', 'active');
-        setLoggedIn(true);
-        setNotice('Signed in with local laboratory session.');
-      } else {
-        setNotice(err.message || 'Use the configured Cell Cited laboratory login.');
+      setLoggedIn(false);
+      sessionStorage.removeItem('cell-cited-session');
+      sessionStorage.removeItem('cell-cited-token');
+      sessionStorage.removeItem('cell-cited-user');
+      setLoginError(err.message || 'Invalid username or password');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleSendOtp = async (event) => {
+    event.preventDefault();
+    const identifier = forgotIdentifier.trim();
+    if (!identifier) return;
+
+    try {
+      setAuthLoading(true);
+      setAuthNotice('');
+      const isEmail = identifier.includes('@');
+      const payload = isEmail ? { email: identifier } : { username: identifier };
+      const res = await api.forgetPassword(payload);
+
+      const emailReturned = res?.email || identifier;
+      setMaskedEmail(emailReturned);
+      setAuthMode('reset');
+
+      let msg = `OTP sent to ${emailReturned}. Valid for 10 minutes.`;
+      if (res?.devOtp) {
+        msg += ` [Dev OTP: ${res.devOtp}]`;
       }
+      setAuthNotice(msg);
+      setAuthNoticeType('success');
+    } catch (err) {
+      setAuthNotice(err.message || 'Failed to send OTP. Please check the email/username and try again.');
+      setAuthNoticeType('error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    const identifier = forgotIdentifier.trim();
+    if (!identifier) return;
+
+    try {
+      setAuthLoading(true);
+      setAuthNotice('');
+      const isEmail = identifier.includes('@');
+      const payload = isEmail ? { email: identifier } : { username: identifier };
+      const res = await api.forgetPassword(payload);
+
+      let msg = `A new OTP has been sent to ${res?.email || identifier}.`;
+      if (res?.devOtp) {
+        msg += ` [Dev OTP: ${res.devOtp}]`;
+      }
+      setAuthNotice(msg);
+      setAuthNoticeType('success');
+    } catch (err) {
+      setAuthNotice(err.message || 'Failed to resend OTP.');
+      setAuthNoticeType('error');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleResetPassword = async (event) => {
+    event.preventDefault();
+    if (newPassword.length < 6) {
+      setAuthNotice('Password must be at least 6 characters long.');
+      setAuthNoticeType('error');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setAuthNotice('Passwords do not match. Please re-enter.');
+      setAuthNoticeType('error');
+      return;
+    }
+    if (!resetOtp.trim()) {
+      setAuthNotice('Please enter the 6-digit OTP code.');
+      setAuthNoticeType('error');
+      return;
+    }
+
+    try {
+      setAuthLoading(true);
+      setAuthNotice('');
+      const identifier = forgotIdentifier.trim();
+      const isEmail = identifier.includes('@');
+      const payload = {
+        ...(isEmail ? { email: identifier } : { username: identifier }),
+        otp: resetOtp.trim(),
+        newPassword,
+      };
+
+      await api.resetPassword(payload);
+
+      setAuthMode('login');
+      setResetOtp('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setNotice({
+        title: 'Password reset successful',
+        message: 'Your password has been reset successfully! You can now log in with your new password.',
+        type: 'success',
+      });
+    } catch (err) {
+      setAuthNotice(err.message || 'Failed to reset password. Please verify the OTP.');
+      setAuthNoticeType('error');
+    } finally {
+      setAuthLoading(false);
     }
   };
 
@@ -1706,45 +1908,200 @@ function App() {
           <h1>Professional laboratory workflow.</h1>
           <p>Browser-local patient, result, billing and report management.</p>
         </section>
-        <form onSubmit={handleLogin}>
-          <h2>Sign in</h2>
-          <input name="username" placeholder="Username" required />
-          <div className="password-input-wrapper">
+        {authMode === 'login' && (
+          <form onSubmit={handleLogin}>
+            <h2>Sign in</h2>
+            {loginError && (
+              <div className="login-error-alert" role="alert">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                <span>{loginError}</span>
+              </div>
+            )}
             <input
-              name="password"
-              type={showPassword ? 'text' : 'password'}
-              placeholder="Password"
+              name="username"
+              placeholder="Username or Email"
               required
+              defaultValue={forgotIdentifier || ''}
+              onChange={() => { if (loginError) setLoginError(''); }}
             />
-            <button
-              type="button"
-              className="toggle-password-btn"
-              onClick={() => setShowPassword((prev) => !prev)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-              title={showPassword ? 'Hide password' : 'Show password'}
-            >
-              {showPassword ? (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                  <line x1="1" y1="1" x2="23" y2="23" />
-                </svg>
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              )}
+            <div className="password-input-wrapper">
+              <input
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Password"
+                required
+                onChange={() => { if (loginError) setLoginError(''); }}
+              />
+              <button
+                type="button"
+                className="toggle-password-btn"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                title={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            <div className="login-forgot-row">
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => {
+                  setAuthMode('forgot');
+                  setAuthNotice('');
+                  setLoginError('');
+                }}
+              >
+                Forgot password?
+              </button>
+            </div>
+            <button type="submit" disabled={authLoading}>
+              {authLoading ? 'Opening workspace...' : 'Open workspace'}
             </button>
-          </div>
-          <button>Open workspace</button>
-          {notice && <p className="notice">{noticeText}</p>}
-        </form>
+            {notice && <p className="notice">{noticeText}</p>}
+          </form>
+        )}
+
+        {authMode === 'forgot' && (
+          <form onSubmit={handleSendOtp} className="auth-card-form">
+            <h2>Forgot password</h2>
+            <p className="auth-card-desc">
+              Enter your registered email address or username to receive a 6-digit OTP code to reset your password.
+            </p>
+            <input
+              name="forgotIdentifier"
+              type="text"
+              value={forgotIdentifier}
+              onChange={(e) => setForgotIdentifier(e.target.value)}
+              placeholder="Registered email or username"
+              required
+              autoFocus
+            />
+            <button type="submit" disabled={authLoading}>
+              {authLoading ? 'Sending OTP via EmailJS...' : 'Send OTP'}
+            </button>
+            {authNotice && <p className={`auth-card-notice ${authNoticeType}`}>{authNotice}</p>}
+            <div className="auth-card-footer">
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthNotice('');
+                }}
+              >
+                ← Back to Sign in
+              </button>
+            </div>
+          </form>
+        )}
+
+        {authMode === 'reset' && (
+          <form onSubmit={handleResetPassword} className="auth-card-form">
+            <h2>Reset password</h2>
+            <p className="auth-card-desc">
+              Enter the 6-digit OTP sent to <b>{maskedEmail || forgotIdentifier}</b> and set a new password.
+            </p>
+            <input
+              name="otp"
+              type="text"
+              inputMode="numeric"
+              maxLength={6}
+              value={resetOtp}
+              onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
+              placeholder="Enter 6-digit OTP"
+              required
+              autoFocus
+              className="otp-code-input"
+            />
+            <div className="password-input-wrapper">
+              <input
+                name="newPassword"
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="New password (min 6 characters)"
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                className="toggle-password-btn"
+                onClick={() => setShowNewPassword((prev) => !prev)}
+                aria-label={showNewPassword ? 'Hide password' : 'Show password'}
+                title={showNewPassword ? 'Hide password' : 'Show password'}
+              >
+                {showNewPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                    <line x1="1" y1="1" x2="23" y2="23" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                )}
+              </button>
+            </div>
+            <input
+              name="confirmPassword"
+              type={showNewPassword ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Confirm new password"
+              required
+              minLength={6}
+            />
+            <button type="submit" disabled={authLoading}>
+              {authLoading ? 'Resetting password...' : 'Reset password'}
+            </button>
+            <div className="resend-row">
+              <span>Didn't receive code?</span>
+              <button
+                type="button"
+                className="link-btn"
+                disabled={authLoading}
+                onClick={handleResendOtp}
+              >
+                Resend OTP
+              </button>
+            </div>
+            {authNotice && <p className={`auth-card-notice ${authNoticeType}`}>{authNotice}</p>}
+            <div className="auth-card-footer">
+              <button
+                type="button"
+                className="link-btn"
+                onClick={() => {
+                  setAuthMode('login');
+                  setAuthNotice('');
+                }}
+              >
+                ← Back to Sign in
+              </button>
+            </div>
+          </form>
+        )}
       </main>
     );
 
   return <div className="app-shell">
     {toastElement && createPortal(toastElement, document.body)}
-    <aside><div className="brand"><CellCitedMark compact /></div><nav>{[['dashboard', 'Dashboard'], ['patients', 'Patients & Registration'], ['newreport', 'Test Booking'], ['billing', 'Billing'], ['results', 'Result entry'], ['reports', 'Reports'], ['doctors', 'Doctors'], ['tests', 'Test catalogue'], ['business', 'Business report'], ['profile', 'Setting ']].map(([key, label]) => <button key={key} className={view === key ? 'active' : ''} onClick={() => setView(key)}><NavIcon name={key} /><span>{label}</span></button>)}</nav><button className="logout" onClick={handleLogout}><NavIcon name="logout" /><span>Log out</span></button><p className="aarnex-credit">Created &amp; Designed by <b>Aarnex Tech</b></p></aside>
+    <aside><div className="brand"><CellCitedMark compact /></div><nav>{[['dashboard', 'Dashboard'], ['patients', 'Patients & Registration'], ['newreport', 'Test Booking'], ['billing', 'Billing'], ['results', 'Result entry'], ['reports', 'Reports'], ['doctors', 'Doctors'], ['tests', 'Test catalogue'], ['business', 'Business report'], ['profile', 'Profile'], ['setting', 'Settings']].map(([key, label]) => <button key={key} className={view === key ? 'active' : ''} onClick={() => setView(key)}><NavIcon name={key} /><span>{label}</span></button>)}</nav><button className="logout" onClick={handleLogout}><NavIcon name="logout" /><span>Log out</span></button><p className="aarnex-credit">Created &amp; Designed by <b>Aarnex Tech</b></p></aside>
     <main className="workspace">
       <header className="app-topbar"><div><span className="topbar-kicker">CCPL · BARABANKI</span><b>Laboratory information system</b></div><div className="topbar-actions"><span className="secure-badge">● Secure local workspace</span><span>{date()}</span></div></header>
       {view === 'dashboard' && <>
@@ -1846,11 +2203,419 @@ function App() {
       {view === 'billing' && <><header className="page-head"><div><span className="eyebrow">BILLING &amp; COLLECTION</span>  </div></header><Billing reports={data.reports} patients={data.patients} onCollect={collectPayment} onInvoice={openInvoice} /></>}
       {view === 'business' && <><header className="page-head"><div><span className="eyebrow">BUSINESS SUMMARY</span> </div></header><BusinessReport reports={data.reports} /></>}
       {view === 'doctors' && <><header className="page-head"><div><span className="eyebrow">REFERRING DOCTORS</span> </div></header><form className="panel catalogue-form doctor-form" onSubmit={addDoctor}><header><div><h2>Add referring doctor</h2><p>Save the clinic contact and referral percentage for future reference.</p></div></header><div className="form-grid doctor-add-grid"><label>Doctor name<input name="name" placeholder="e.g. Dr. A. Sharma" required /></label><label>Specialty<input name="specialty" placeholder="e.g. General Medicine" /></label><label>Mobile<input name="mobile" inputMode="numeric" placeholder="10-digit mobile number" /></label><label>Referral percentage<input name="referralPercentage" type="number" min="0" max="100" step="0.01" defaultValue="0" /><small>0–100% of the agreed referral share</small></label><label className="wide">Clinic address<input name="address" placeholder="Clinic / hospital address" /></label></div><button>Save doctor</button></form><section className="panel doctor-directory"><header className="doctor-directory-head"><div><h2>Saved referring doctors</h2><p>Edit a name, specialty, mobile number, clinic address, or agreed referral percentage, then save the row.</p></div><span className="directory-count">{data.doctors.length} saved</span></header><Doctors doctors={data.doctors} reports={data.reports} onSave={updateDoctor} /></section></>}
-      {view === 'profile' && <><header className="page-head"><div><span className="eyebrow">LABORATORY PROFILE</span><h1>{labProfile.name}</h1><p>{labProfile.tagline || 'Report identity and authorised signatory details.'}</p></div></header><section className="panel profile"><div><span>Medical establishment certificate</span><b>{labProfile.certificateNumber}</b></div><dl><dt>Address</dt><dd>{labProfile.address}</dd><dt>Contact</dt><dd>{(labProfile.phones || []).join(' · ')} · {labProfile.email}</dd><dt>Authorised signatory</dt><dd>{labProfile.authorisedSignatory}</dd><dt>Registration</dt><dd>{labProfile.registrationAuthority}</dd></dl></section></>}
+      {view === 'profile' && (() => {
+        const profileUser = currentUser || DEFAULT_USER;
+        const lab = profileUser.laboratory || labProfile;
+        const phones = (lab.phones && lab.phones.length) ? lab.phones.join(' · ') : (labProfile.phones || []).join(' · ');
+        const roleDisplay = profileUser.role ? (profileUser.role.charAt(0).toUpperCase() + profileUser.role.slice(1)) : 'Administrator';
+
+        return (
+          <div className="profile-page-wrapper">
+            <header className="profile-hero-header">
+              <div className="profile-avatar-circle">
+                <img
+                  src="/avatar.svg"
+                  alt={profileUser.name || 'User avatar'}
+                  className="profile-avatar-img"
+                  onError={(e) => {
+                    e.currentTarget.src = '/cell-cited-logo.jpg';
+                  }}
+                />
+              </div>
+              <div className="profile-hero-info">
+                <div className="profile-name-badge-row">
+                  <h1 className="profile-hero-name">{profileUser.name || 'Super Administrator'}</h1>
+                  <span className="profile-verified-badge" title="Verified Account">
+                    <svg viewBox="0 0 24 24" width="20" height="20" aria-label="Verified">
+                      <circle cx="12" cy="12" r="10" fill="#1d9bf0" />
+                      <path d="M8.5 12.2l2.3 2.3 4.7-4.7" fill="none" stroke="#ffffff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                </div>
+                <div className="profile-hero-email">{profileUser.email || 'admin@cellcited.com'}</div>
+              </div>
+            </header>
+
+            <section className="profile-details-card">
+              <h2 className="profile-card-title">Personal details</h2>
+              <div className="profile-details-list">
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Full name:</span>
+                  <span className="profile-detail-value">{profileUser.name || 'Super Administrator'}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Username:</span>
+                  <span className="profile-detail-value">{profileUser.username || 'admin'}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Role:</span>
+                  <span className="profile-detail-value">{roleDisplay}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Email:</span>
+                  <span className="profile-detail-value">{profileUser.email || 'admin@cellcited.com'}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Phone Number:</span>
+                  <span className="profile-detail-value">{phones}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Address:</span>
+                  <span className="profile-detail-value profile-address-val">
+                    <span className="profile-flag-icon" role="img" aria-label="India">🇮🇳</span>
+                    <span>{lab.address || labProfile.address}</span>
+                  </span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Laboratory:</span>
+                  <span className="profile-detail-value">{lab.name || labProfile.name}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Lab Code:</span>
+                  <span className="profile-detail-value">{lab.code || 'CCPL'}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Medical Certificate:</span>
+                  <span className="profile-detail-value">{lab.medicalCertificate || labProfile.certificateNumber || 'CMEE26151240'}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Authorised Signatory:</span>
+                  <span className="profile-detail-value">{lab.authorisedSignatory || labProfile.authorisedSignatory}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Registration:</span>
+                  <span className="profile-detail-value">{lab.registrationDetails || labProfile.registrationAuthority}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Timezone:</span>
+                  <span className="profile-detail-value">{lab.timezone || 'Asia/Kolkata'}</span>
+                </div>
+                <div className="profile-detail-row">
+                  <span className="profile-detail-label">Status:</span>
+                  <span className="profile-detail-value">
+                    <span className="profile-status-badge">
+                      <span className="profile-status-indicator"></span>
+                      {lab.isActive !== false ? 'Active' : 'Inactive'}
+                    </span>
+                  </span>
+                </div>
+              </div>
+            </section>
+          </div>
+        );
+      })()}
+      {view === 'setting' && (
+        <SettingsView
+          currentUser={currentUser}
+          labProfile={labProfile}
+          setNotice={setNotice}
+          setView={setView}
+        />
+      )}
       {view === 'preview' && selected && selectedPatient && <><header className="page-head preview-head"><div><span className="eyebrow">REPORT PREVIEW</span><h1>{selected.number}</h1><p>Choose a report print format.</p></div><div><button className="secondary" onClick={() => setView('reports')}>Back to reports</button><div className="report-print-control"><select aria-label="Letterhead print option" value={reportPrintOption} onChange={(event) => setReportPrintOption(event.target.value)}><option value="with">With letterhead</option><option value="without">Without letterhead</option></select><button onClick={() => setReportPrintMode(reportPrintOption)}>Print report</button><button className="secondary" type="button" disabled={isGeneratingReportPdf} onClick={shareReportPdf}>{isGeneratingReportPdf ? 'Generating PDF…' : 'Share PDF'}</button></div></div></header><ReportDocument report={selected} patient={selectedPatient} labProfile={labProfile} testGroups={testGroups} withoutLetterhead={reportPrintMode === 'without' || reportPdfMode === 'without'} pdfExport={reportPdfMode !== null} /></>}
       {view === 'invoice' && invoiceReport && <><header className="page-head preview-head"><div><span className="eyebrow">INVOICE</span><h1>{invoiceReport.number}</h1> </div><div><button className="secondary" onClick={() => setView('billing')}>Back to billing</button><button onClick={() => printDocument(`CCPL-Invoice-${invoiceReport.number}`)}>Print / Save PDF</button></div></header><InvoiceDocument report={invoiceReport} patient={invoicePatient} labProfile={labProfile} /></>}
     </main>
   </div>;
+}
+
+function EyeIcon({ open }) {
+  return open ? (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  ) : (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
+}
+
+function SettingsView({ currentUser, labProfile, setNotice, setView }) {
+  const profileUser = currentUser || DEFAULT_USER;
+
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [localNotice, setLocalNotice] = useState(null);
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setLocalNotice(null);
+
+    // 1. Validate Old Password
+    if (!oldPassword.trim()) {
+      setLocalNotice({ type: 'error', message: 'Please enter your current old password.' });
+      return;
+    }
+
+    // 2. Validate New Password
+    if (!newPassword.trim()) {
+      setLocalNotice({ type: 'error', message: 'Please enter a new password.' });
+      return;
+    }
+    if (newPassword.length < 6) {
+      setLocalNotice({ type: 'error', message: 'New password must be at least 6 characters long.' });
+      return;
+    }
+
+    // 3. Validate Confirm Password & check if both are the same
+    if (!confirmPassword.trim()) {
+      setLocalNotice({ type: 'error', message: 'Please confirm your new password.' });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setLocalNotice({ type: 'error', message: 'New password and confirm password do not match.' });
+      return;
+    }
+
+    if (oldPassword === newPassword) {
+      setLocalNotice({ type: 'error', message: 'New password cannot be the same as your old password. Please choose a different password.' });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await api.resetPassword({
+        oldPassword: oldPassword.trim(),
+        newPassword,
+        confirmPassword,
+      });
+
+      setLocalNotice({
+        type: 'success',
+        message: 'Password reset successful! Your password has been updated in the database. Use your new password for your future logins.',
+      });
+      setNotice({
+        title: 'Password Updated',
+        message: 'Your administrator password has been updated successfully.',
+        type: 'success',
+      });
+      setOldPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err) {
+      const errMsg = err.message || (err.error?.message) || 'Failed to update password. Please check your old password.';
+      setLocalNotice({ type: 'error', message: errMsg });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="settings-page-wrapper">
+      <header className="page-head">
+        <div>
+          <span className="eyebrow">SYSTEM &amp; SECURITY SETTINGS</span>
+          <h1>Settings</h1>
+          <p>Manage administrator security credentials, reset password, and access controls.</p>
+        </div>
+      </header>
+
+      {/* Account Identity Summary */}
+      <div className="settings-account-banner">
+        <div className="settings-account-info">
+          <div className="settings-account-avatar">
+            {profileUser.name ? profileUser.name.charAt(0) : 'A'}
+          </div>
+          <div className="settings-account-details">
+            <b>{profileUser.name || 'Super Administrator'}</b>
+            <span>@{profileUser.username || 'admin'} · {profileUser.email || 'admin@cellcited.com'}</span>
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <span className="settings-role-tag">{profileUser.role || 'administrator'}</span>
+          <button
+            type="button"
+            className="secondary"
+            style={{ fontSize: '12px', padding: '6px 12px' }}
+            onClick={() => setView('profile')}
+          >
+            View Profile →
+          </button>
+        </div>
+      </div>
+
+      {/* Reset Password Card */}
+      <section className="settings-card">
+        <div className="settings-card-head">
+          <div className="settings-icon-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <div>
+            <h2>Reset Password</h2>
+            <p>Update your administrator password by entering your current old password and new password.</p>
+          </div>
+        </div>
+
+        {localNotice && (
+          <div className={`settings-notice-box ${localNotice.type}`}>
+            <span style={{ fontSize: '16px' }}>{localNotice.type === 'success' ? '✓' : '⚠'}</span>
+            <div style={{ flex: 1 }}>{localNotice.message}</div>
+          </div>
+        )}
+
+        <form onSubmit={handleResetPassword} className="settings-reset-form">
+          {/* 1st: Old Password */}
+          <div className="settings-form-row">
+            <label>1. Old password</label>
+            <div className="settings-input-action">
+              <input
+                type={showOldPassword ? 'text' : 'password'}
+                value={oldPassword}
+                onChange={(e) => {
+                  setOldPassword(e.target.value);
+                  if (localNotice) setLocalNotice(null);
+                }}
+                placeholder="Enter your current old password"
+                required
+                disabled={loading}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                className="settings-eye-btn"
+                onClick={() => setShowOldPassword(!showOldPassword)}
+                aria-label="Toggle old password visibility"
+              >
+                <EyeIcon open={showOldPassword} />
+              </button>
+            </div>
+            <small style={{ color: '#64748b' }}>Enter your current account password to authorize the change.</small>
+          </div>
+
+          {/* 2nd: New Password */}
+          <div className="settings-form-row">
+            <label>2. New password</label>
+            <div className="settings-input-action">
+              <input
+                type={showNewPassword ? 'text' : 'password'}
+                value={newPassword}
+                onChange={(e) => {
+                  setNewPassword(e.target.value);
+                  if (localNotice) setLocalNotice(null);
+                }}
+                placeholder="Enter new password (min. 6 characters)"
+                required
+                disabled={loading}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="settings-eye-btn"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                aria-label="Toggle new password visibility"
+              >
+                <EyeIcon open={showNewPassword} />
+              </button>
+            </div>
+            <small style={{ color: '#64748b' }}>Must be at least 6 characters long.</small>
+          </div>
+
+          {/* 3rd: Confirm Password */}
+          <div className="settings-form-row">
+            <label>3. Confirm password</label>
+            <div className="settings-input-action">
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                value={confirmPassword}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (localNotice) setLocalNotice(null);
+                }}
+                placeholder="Re-enter your new password to confirm"
+                required
+                disabled={loading}
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="settings-eye-btn"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label="Toggle confirm password visibility"
+              >
+                <EyeIcon open={showConfirmPassword} />
+              </button>
+            </div>
+            {newPassword && confirmPassword && (
+              <small style={{ color: newPassword === confirmPassword ? '#059669' : '#dc2626', fontWeight: 500 }}>
+                {newPassword === confirmPassword ? '✓ Passwords match' : '✕ Passwords do not match'}
+              </small>
+            )}
+          </div>
+
+          <div className="settings-actions-group">
+            <button type="submit" disabled={loading}>
+              {loading ? 'Validating & Resetting…' : 'Reset Password'}
+            </button>
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => {
+                setOldPassword('');
+                setNewPassword('');
+                setConfirmPassword('');
+                setLocalNotice(null);
+              }}
+              disabled={loading}
+            >
+              Clear
+            </button>
+          </div>
+        </form>
+      </section>
+
+      {/* System Security Specifications */}
+      <section className="settings-card">
+        <div className="settings-card-head">
+          <div className="settings-icon-badge" style={{ background: '#ecfdf5', color: '#059669' }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            </svg>
+          </div>
+          <div>
+            <h2>Security &amp; Encryption Specifications</h2>
+            <p>Direct authentication via Bearer token verification and bcrypt cryptographic hashing.</p>
+          </div>
+        </div>
+
+        <div className="settings-info-grid">
+          <div className="settings-info-item">
+            <span>Session Authorization</span>
+            <b>Active JWT Bearer Token</b>
+          </div>
+          <div className="settings-info-item">
+            <span>Password Verification</span>
+            <b>bcrypt (Salt rounds: 10)</b>
+          </div>
+          <div className="settings-info-item">
+            <span>Verification Method</span>
+            <b>Old Password Matching</b>
+          </div>
+          <div className="settings-info-item">
+            <span>Database Backend</span>
+            <b>MongoDB Atlas (Connected)</b>
+          </div>
+          <div className="settings-info-item">
+            <span>Active Username</span>
+            <b>@{profileUser.username || 'admin'}</b>
+          </div>
+          <div className="settings-info-item">
+            <span>Laboratory Code</span>
+            <b>{labProfile?.code || 'CCPL'}</b>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 function InvestigationPicker({ catalogue, testGroups = TEST_GROUPS, booking = false, onSelectionChange }) {

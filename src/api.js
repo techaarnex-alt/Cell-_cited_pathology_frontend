@@ -25,11 +25,14 @@ const handleResponse = async (res) => {
 };
 
 export const api = {
-  async login(username, password) {
+  async login(identifier, password) {
+    const clean = String(identifier || '').trim();
+    const isEmail = clean.includes('@');
+    const body = isEmail ? { email: clean, username: clean, password } : { username: clean, password };
     const res = await fetch(`${API_BASE}/auth/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify(body),
     });
     const data = await handleResponse(res);
     if (data.token) {
@@ -51,6 +54,25 @@ export const api = {
     sessionStorage.removeItem('cell-cited-token');
     sessionStorage.removeItem('cell-cited-session');
     sessionStorage.removeItem('cell-cited-user');
+  },
+
+  async forgetPassword(payload) {
+    const body = typeof payload === 'string' ? { email: payload } : payload;
+    const res = await fetch(`${API_BASE}/auth/forget-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    return handleResponse(res);
+  },
+
+  async resetPassword(payload) {
+    const res = await fetch(`${API_BASE}/auth/password-reset`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(res);
   },
 
   async getPatients(params = {}) {
