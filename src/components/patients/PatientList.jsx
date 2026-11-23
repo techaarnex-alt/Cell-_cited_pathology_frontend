@@ -50,6 +50,7 @@ export default function PatientList({
         <table className="app-table patient-table">
           <thead>
             <tr>
+              <th>S.NO</th>
               <th>ID</th>
               <th>Patient</th>
               <th>Age / gender</th>
@@ -60,14 +61,15 @@ export default function PatientList({
             </tr>
           </thead>
           <tbody>
-            {visiblePatients.length ? (
-              visiblePatients.map((patient) => {
+            {visiblePatients?.length ? (
+              visiblePatients.map((patient, index) => {
                 const patientReports = reports.filter(
                   (report) => report.patientId === patient.id
                 );
                 const latestReport = patientReports[0];
                 return (
                   <tr key={patient.id}>
+                    <td>{startIndex + index + 1}</td>
                     <td>
                       <b>{patient.id}</b>
                     </td>
@@ -85,9 +87,8 @@ export default function PatientList({
                     </td>
                     <td>
                       {latestReport?.tests?.length
-                        ? `${latestReport.tests.length} test${
-                            latestReport.tests.length === 1 ? '' : 's'
-                          } selected`
+                        ? `${latestReport.tests.length} test${latestReport.tests.length === 1 ? '' : 's'
+                        } selected`
                         : 'No tests selected'}
                     </td>
                     {(onOpen || onNewReport) && (
@@ -118,7 +119,7 @@ export default function PatientList({
             ) : (
               <tr>
                 <td
-                  colSpan={onOpen || onNewReport ? 7 : 6}
+                  colSpan={onOpen || onNewReport ? 8 : 7}
                   className="empty"
                   style={{ padding: '28px', textAlign: 'center' }}
                 >
@@ -207,9 +208,8 @@ export default function PatientList({
                 <button
                   key={p}
                   type="button"
-                  className={`table-page-btn ${
-                    p === currentPage ? 'active' : ''
-                  }`}
+                  className={`table-page-btn ${p === currentPage ? 'active' : ''
+                    }`}
                   onClick={() => setPage(p)}
                 >
                   {p}

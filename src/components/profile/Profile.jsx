@@ -20,7 +20,7 @@ export default function Profile() {
       <header className="profile-hero-header">
         <div className="profile-avatar-circle">
           <img
-            src="/avatar.svg"
+            src="/cell-cited-logo.jpg"
             alt={profileUser.name || 'User avatar'}
             className="profile-avatar-img"
             onError={(e) => {
