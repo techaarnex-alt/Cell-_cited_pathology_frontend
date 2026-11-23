@@ -1688,17 +1688,38 @@ function App() {
 
   const collectPayment = async (report, paymentData) => {
     const isObject = typeof paymentData === 'object' && paymentData !== null;
-    const numAmount = isObject ? Number(paymentData.received ?? paymentData.amount ?? 0) : Number(paymentData || 0);
+    const prevPaid = Number(report.paid || 0);
     const numTotal = isObject && paymentData.total !== undefined ? Number(paymentData.total) : Number(report.fee || 0);
     const numDiscount = isObject && paymentData.discount !== undefined ? Number(paymentData.discount) : Number(report.discount || 0);
     const paymentMethod = (isObject && (paymentData.paymentMode || paymentData.paymentMethod)) || report.paymentMethod || 'Cash';
+
+    // collectingNow is the amount collected in this transaction
+    let collectingNow = 0;
+    if (isObject) {
+      if (paymentData.collectingNow !== undefined) {
+        collectingNow = Number(paymentData.collectingNow);
+      } else if (paymentData.amount !== undefined) {
+        collectingNow = Number(paymentData.amount);
+      } else if (paymentData.received !== undefined) {
+        const rVal = Number(paymentData.received);
+        // If received is cumulative total paid:
+        collectingNow = rVal >= prevPaid ? (rVal - prevPaid) : rVal;
+      }
+    } else {
+      collectingNow = Number(paymentData || 0);
+    }
+    collectingNow = Math.max(0, collectingNow);
+
+    const netPayable = Math.max(0, numTotal - numDiscount);
+    const newTotalPaid = Math.min(netPayable, prevPaid + collectingNow);
+    const newDue = Math.max(0, netPayable - newTotalPaid);
 
     if (report.backendId || (report.id && report.id.length === 24)) {
       try {
         const invoices = await api.getInvoices({ reportId: report.backendId || report.id });
         if (Array.isArray(invoices) && invoices.length) {
           await api.recordPayment(invoices[0]._id, {
-            amount: numAmount,
+            amount: collectingNow,
             method: paymentMethod,
             discount: numDiscount,
           });
@@ -1708,7 +1729,6 @@ function App() {
       }
     }
 
-    const newDue = Math.max(0, numTotal - numDiscount - numAmount);
     save({
       ...data,
       reports: data.reports.map((item) =>
@@ -1717,7 +1737,7 @@ function App() {
             ...item,
             fee: numTotal,
             discount: numDiscount,
-            paid: numAmount,
+            paid: newTotalPaid,
             paymentMethod: paymentMethod,
             paidOn: date(),
             isCollected: newDue === 0,
@@ -1728,11 +1748,21 @@ function App() {
 
     const p = data.patients.find((item) => item.id === report.patientId);
     const pName = p ? patientName(p) : 'Patient';
-    setNotice({
-      title: 'Payment recorded',
-      message: `Receipt saved: ₹${numAmount.toFixed(2)} recorded for ${pName} (${report.number}) via ${paymentMethod}.${newDue > 0 ? ` Due: ₹${newDue.toFixed(2)}` : ' Fully paid.'}`,
-      type: 'success',
-    });
+    if (newDue === 0) {
+      setNotice({
+        title: 'Payment complete',
+        message: prevPaid > 0
+          ? `Due cleared: ₹${collectingNow.toFixed(2)} collected for ${pName} (${report.number}). Full bill of ₹${numTotal.toFixed(2)} is now Paid in Full. Tax Invoice is ready to print.`
+          : `Full payment of ₹${collectingNow.toFixed(2)} recorded for ${pName} (${report.number}). Tax Invoice is ready to print.`,
+        type: 'success',
+      });
+    } else {
+      setNotice({
+        title: 'Partial payment recorded',
+        message: `Partial payment of ₹${collectingNow.toFixed(2)} recorded for ${pName} (${report.number}). Remaining due: ₹${newDue.toFixed(2)}. Tax invoice will be generated upon full payment.`,
+        type: 'warning',
+      });
+    }
   };
 
   useEffect(() => {
@@ -2980,7 +3010,7 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
       const f = Number(r.fee || 0);
       const d = Number(r.discount || 0);
       const p = Number(r.paid || 0);
-      return Math.max(0, f - d - p) > 0 && !r.isCollected;
+      return Math.max(0, f - d - p) > 0;
     });
     return pending ? pending.id : reports[0].id;
   });
@@ -2993,28 +3023,29 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
 
   const reportFee = Number(activeReport?.fee || 0);
   const reportDisc = Number(activeReport?.discount || 0);
-  const reportPaid = Number(activeReport?.paid || 0);
-  const reportDue = Math.max(0, reportFee - reportDisc - reportPaid);
+  const prevPaid = Number(activeReport?.paid || 0);
+  const netTotal = Math.max(0, reportFee - reportDisc);
+  const currentDue = Math.max(0, netTotal - prevPaid);
 
   const isCollected = Boolean(
     activeReport && (
-      (activeReport.id === justCollectedId && reportDue === 0) ||
-      (activeReport.isCollected && reportDue === 0) ||
-      (reportPaid > 0 && reportDue === 0)
+      (activeReport.id === justCollectedId && currentDue === 0) ||
+      (activeReport.isCollected && currentDue === 0) ||
+      (prevPaid > 0 && currentDue === 0)
     )
   );
 
   const [total, setTotal] = useState(() => (activeReport ? Number(activeReport.fee || 0).toFixed(2) : '0.00'));
   const [discount, setDiscount] = useState(() => (activeReport ? Number(activeReport.discount || 0).toFixed(2) : '0.00'));
-  const [received, setReceived] = useState(() => {
+  const [collectingNow, setCollectingNow] = useState(() => {
     if (!activeReport) return '0.00';
     const fee = Number(activeReport.fee || 0);
     const disc = Number(activeReport.discount || 0);
-    const net = Math.max(0, fee - disc);
-    const paid = activeReport.paid !== undefined && (activeReport.isCollected || activeReport.paid > 0)
-      ? Number(activeReport.paid)
-      : net;
-    return paid.toFixed(2);
+    const pPaid = Number(activeReport.paid || 0);
+    const due = Math.max(0, fee - disc - pPaid);
+    if (due > 0) return due.toFixed(2);
+    if (pPaid === 0) return Math.max(0, fee - disc).toFixed(2);
+    return '0.00';
   });
   const [paymentMode, setPaymentMode] = useState(() => activeReport?.paymentMethod || 'Cash');
 
@@ -3022,89 +3053,95 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
     if (activeReport) {
       const fee = Number(activeReport.fee || 0);
       const disc = Number(activeReport.discount || 0);
-      const net = Math.max(0, fee - disc);
-      const paid = activeReport.paid !== undefined && (activeReport.isCollected || activeReport.paid > 0)
-        ? Number(activeReport.paid)
-        : net;
+      const pPaid = Number(activeReport.paid || 0);
+      const due = Math.max(0, fee - disc - pPaid);
       setTotal(fee.toFixed(2));
       setDiscount(disc.toFixed(2));
-      setReceived(paid.toFixed(2));
+      if (due > 0) {
+        setCollectingNow(due.toFixed(2));
+      } else if (pPaid === 0) {
+        setCollectingNow(Math.max(0, fee - disc).toFixed(2));
+      } else {
+        setCollectingNow('0.00');
+      }
       setPaymentMode(activeReport.paymentMethod || 'Cash');
     }
-  }, [activeReport?.id]);
+  }, [activeReport?.id, activeReport?.paid, activeReport?.fee, activeReport?.discount]);
 
   const numTotal = Math.max(0, parseFloat(total) || 0);
   const numDiscount = Math.min(numTotal, Math.max(0, parseFloat(discount) || 0));
-  const numReceived = Math.max(0, parseFloat(received) || 0);
-  const due = Math.max(0, numTotal - numDiscount - numReceived);
-  const dueString = due.toFixed(2);
+  const numCollecting = Math.max(0, parseFloat(collectingNow) || 0);
+  const liveNet = Math.max(0, numTotal - numDiscount);
+  const newTotalPaid = Math.min(liveNet, prevPaid + numCollecting);
+  const liveRemainingDue = Math.max(0, liveNet - newTotalPaid);
+  const dueString = liveRemainingDue.toFixed(2);
 
   const handleTotalChange = (val) => {
+    if (prevPaid > 0) return;
     setTotal(val);
     const t = Math.max(0, parseFloat(val) || 0);
     const d = Math.min(t, Math.max(0, parseFloat(discount) || 0));
     const net = Math.max(0, t - d);
-    setReceived(net.toFixed(2));
+    setCollectingNow(net.toFixed(2));
   };
 
   const handleDiscountChange = (val) => {
+    if (prevPaid > 0) return;
     setDiscount(val);
     const dRaw = parseFloat(val);
     const d = isNaN(dRaw) ? 0 : Math.max(0, dRaw);
     const t = Math.max(0, parseFloat(total) || 0);
     const validDiscount = Math.min(t, d);
     const net = Math.max(0, t - validDiscount);
-    setReceived(net.toFixed(2));
+    setCollectingNow(net.toFixed(2));
   };
 
   const handleSavePayment = (event) => {
     event?.preventDefault?.();
     if (!activeReport || isCollected) return;
+    if (numCollecting <= 0) {
+      alert('Please enter an amount to collect.');
+      return;
+    }
     setJustCollectedId(activeReport.id);
     onCollect(activeReport, {
       total: numTotal,
       discount: numDiscount,
-      received: numReceived,
+      collectingNow: numCollecting,
+      received: newTotalPaid,
       paymentMode,
     });
   };
 
-  const filteredReports = patientFilter.trim()
-    ? reports.filter((report) => {
-      const p = patients.find((pat) => pat.id === report.patientId);
-      const name = p ? patientName(p) : '';
-      const q = patientFilter.toLowerCase();
-      return (
-        report.number?.toLowerCase().includes(q) ||
-        name.toLowerCase().includes(q) ||
-        p?.mobile?.includes(q) ||
-        p?.id?.toLowerCase().includes(q)
-      );
-    })
-    : reports;
+  const filterMatch = (report) => {
+    if (!patientFilter.trim()) return true;
+    const p = patients.find((pat) => pat.id === report.patientId);
+    const name = p ? patientName(p) : '';
+    const q = patientFilter.toLowerCase();
+    return (
+      report.number?.toLowerCase().includes(q) ||
+      name.toLowerCase().includes(q) ||
+      p?.mobile?.includes(q) ||
+      p?.id?.toLowerCase().includes(q)
+    );
+  };
 
-  // Hide any patient who has 0 due (only show patients who have Due > 0)
   const pendingReports = reports.filter((r) => {
     const feeNum = Number(r.fee || 0);
     const discNum = Number(r.discount || 0);
     const paidNum = Number(r.paid || 0);
-    const reportDue = Math.max(0, feeNum - discNum - paidNum);
-    return reportDue > 0 && !r.isCollected;
+    return Math.max(0, feeNum - discNum - paidNum) > 0;
   });
 
-  const dropdownReports = patientFilter.trim()
-    ? pendingReports.filter((report) => {
-      const p = patients.find((pat) => pat.id === report.patientId);
-      const name = p ? patientName(p) : '';
-      const q = patientFilter.toLowerCase();
-      return (
-        report.number?.toLowerCase().includes(q) ||
-        name.toLowerCase().includes(q) ||
-        p?.mobile?.includes(q) ||
-        p?.id?.toLowerCase().includes(q)
-      );
-    })
-    : pendingReports;
+  const settledReports = reports.filter((r) => {
+    const feeNum = Number(r.fee || 0);
+    const discNum = Number(r.discount || 0);
+    const paidNum = Number(r.paid || 0);
+    return Math.max(0, feeNum - discNum - paidNum) === 0;
+  });
+
+  const filteredPending = pendingReports.filter(filterMatch);
+  const filteredSettled = settledReports.filter(filterMatch);
 
   return (
     <div className="billing-section-container">
@@ -3114,27 +3151,44 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
         <div className="billing-receipt-patient-row">
           <div className="billing-receipt-patient-header">
             <label className="billing-receipt-patient-label">
-              <span>Patient name</span>
+              <span>Patient with pending due / bill</span>
               <select
                 className="billing-receipt-patient-select"
-                value={dropdownReports.some((r) => r.id === activeReport?.id) ? activeReport?.id : ''}
+                value={activeReport?.id || ''}
                 onChange={(event) => setSelectedReportId(event.target.value)}
               >
-                {!dropdownReports.length && <option value="">No pending dues — all patients have 0 due</option>}
-                {dropdownReports.map((report) => {
-                  const patient = patients.find((p) => p.id === report.patientId);
-                  const pName = patient ? patientName(patient) : 'Patient unavailable';
-                  const feeNum = Number(report.fee || 0);
-                  const discNum = Number(report.discount || 0);
-                  const paidNum = Number(report.paid || 0);
-                  const reportDue = Math.max(0, feeNum - discNum - paidNum);
-                  if (reportDue <= 0) return null; // Hide any patient who has 0 due
-                  return (
-                    <option key={report.id} value={report.id}>
-                      {pName} · {report.number} (Total: ₹{feeNum.toFixed(2)}, Due: ₹{reportDue.toFixed(2)})
-                    </option>
-                  );
-                })}
+                {!reports.length && <option value="">No billing records found</option>}
+                {filteredPending.length > 0 && (
+                  <optgroup label="⚠️ Outstanding Dues">
+                    {filteredPending.map((report) => {
+                      const patient = patients.find((p) => p.id === report.patientId);
+                      const pName = patient ? patientName(patient) : 'Patient unavailable';
+                      const feeNum = Number(report.fee || 0);
+                      const discNum = Number(report.discount || 0);
+                      const paidNum = Number(report.paid || 0);
+                      const reportDue = Math.max(0, feeNum - discNum - paidNum);
+                      return (
+                        <option key={report.id} value={report.id}>
+                          {pName} · {report.number} (Total: ₹{feeNum.toFixed(2)}{paidNum > 0 ? `, Paid: ₹${paidNum.toFixed(2)}` : ''} | Due: ₹{reportDue.toFixed(2)})
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                )}
+                {filteredSettled.length > 0 && (
+                  <optgroup label="✓ Settled / Fully Paid">
+                    {filteredSettled.map((report) => {
+                      const patient = patients.find((p) => p.id === report.patientId);
+                      const pName = patient ? patientName(patient) : 'Patient unavailable';
+                      const feeNum = Number(report.fee || 0);
+                      return (
+                        <option key={report.id} value={report.id}>
+                          {pName} · {report.number} (₹{feeNum.toFixed(2)} · Fully Paid)
+                        </option>
+                      );
+                    })}
+                  </optgroup>
+                )}
               </select>
             </label>
 
@@ -3159,13 +3213,31 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
               <span>Mobile: <b>{activePatient.mobile || '—'}</b></span>
               <span>Referred by: <b>{activePatient.reference || 'Self'}</b></span>
               <span>Report no: <b>{activeReport.number}</b></span>
+              {currentDue > 0 ? (
+                <span className="due-badge">Outstanding Due: ₹{currentDue.toFixed(2)}</span>
+              ) : (
+                <span className="status final">✓ Fully Paid</span>
+              )}
             </div>
           )}
         </div>
 
+        {prevPaid > 0 && currentDue > 0 && (
+          <div className="billing-due-alert-banner">
+            <span className="billing-due-icon">₹</span>
+            <div className="billing-due-text">
+              <strong>Outstanding Due Clearance (Previous Payment: ₹{prevPaid.toFixed(2)})</strong>
+              <span>
+                Total service bill is <b>₹{reportFee.toFixed(2)}</b>. The patient previously paid <b>₹{prevPaid.toFixed(2)}</b>, leaving an outstanding balance of <b className="due-highlight">₹{currentDue.toFixed(2)}</b>.
+                Input fields below are preset to collect this due. Full <b>₹{reportFee.toFixed(2)}</b> Tax Invoice will be generated upon complete payment.
+              </span>
+            </div>
+          </div>
+        )}
+
         <div className="billing-receipt-grid-row">
           <div className="billing-receipt-field">
-            <label>Total</label>
+            <label>Total Billed (₹)</label>
             <input
               type="number"
               step="0.01"
@@ -3173,7 +3245,8 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
               value={total}
               onChange={(e) => handleTotalChange(e.target.value)}
               placeholder="0.00"
-              disabled={isCollected}
+              disabled={isCollected || prevPaid > 0}
+              title={prevPaid > 0 ? 'Total billed is locked because a payment was already recorded' : ''}
               required
             />
           </div>
@@ -3187,23 +3260,53 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
               value={discount}
               onChange={(e) => handleDiscountChange(e.target.value)}
               placeholder="0.00"
-              disabled={isCollected}
+              disabled={isCollected || prevPaid > 0}
+              title={prevPaid > 0 ? 'Discount is locked because a payment was already recorded' : ''}
             />
           </div>
 
           <div className="billing-receipt-field">
-            <label>Received (₹)</label>
+            <label>Previously Paid (₹)</label>
             <input
-              type="number"
-              step="0.01"
-              min="0"
-              value={received}
-              onChange={(e) => setReceived(e.target.value)}
-              placeholder="0.00"
-              disabled={isCollected}
+              type="text"
+              readOnly
+              value={`₹${prevPaid.toFixed(2)}`}
+              className="billing-readonly-input"
+              title="Amount already paid towards this bill"
             />
           </div>
 
+          <div className="billing-receipt-field">
+            <label>{prevPaid > 0 ? 'Collecting Due Amount (₹)' : 'Amount Collecting Now (₹)'}</label>
+            <input
+              type="number"
+              step="0.01"
+              min="0.01"
+              max={currentDue > 0 ? currentDue : liveNet}
+              value={collectingNow}
+              onChange={(e) => setCollectingNow(e.target.value)}
+              placeholder="0.00"
+              disabled={isCollected}
+              required
+            />
+          </div>
+        </div>
+
+        {!isCollected && (
+          <div className="billing-calc-summary">
+            <span>Total Bill: <b>₹{numTotal.toFixed(2)}</b></span>
+            {numDiscount > 0 && <span>Discount: <b>−₹{numDiscount.toFixed(2)}</b></span>}
+            <span>Net: <b>₹{liveNet.toFixed(2)}</b></span>
+            <span className="divider">|</span>
+            <span>Previously Paid: <b>₹{prevPaid.toFixed(2)}</b></span>
+            <span>Collecting Now: <b className="collect-now-highlight">+₹{numCollecting.toFixed(2)}</b></span>
+            <span className="divider">→</span>
+            <span>Total Paid After: <b>₹{newTotalPaid.toFixed(2)}</b></span>
+            <span>Remaining Due: <b className={liveRemainingDue > 0 ? 'due-text-red' : 'due-text-green'}>₹{dueString}</b></span>
+          </div>
+        )}
+
+        <div className="billing-receipt-bottom-row">
           <div className="billing-receipt-field">
             <label>Payment mode</label>
             <select
@@ -3218,16 +3321,14 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
               <option value="Other">Other</option>
             </select>
           </div>
-        </div>
 
-        <div className="billing-receipt-bottom-row">
           <div className="billing-receipt-field billing-receipt-due">
-            <label>Due (₹)</label>
+            <label>{liveRemainingDue === 0 ? 'Balance Due (Cleared)' : 'Remaining Due (₹)'}</label>
             <input
               type="text"
               readOnly
               value={dueString}
-              className="billing-due-input"
+              className={`billing-due-input ${liveRemainingDue === 0 ? 'billing-due-input-cleared' : ''}`}
             />
           </div>
 
@@ -3235,16 +3336,26 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
             <button
               type="submit"
               className={`billing-btn-save ${isCollected ? 'billing-btn-collected' : ''}`}
-              disabled={isCollected || !activeReport}
-              title={isCollected ? 'Payment has already been collected for this bill' : 'Save and collect payment'}
+              disabled={isCollected || !activeReport || numCollecting <= 0}
+              title={isCollected ? 'Payment has already been completed in full' : 'Record payment'}
             >
-              {isCollected ? '✓ Payment Collected' : 'Save & Collect payment'}
+              {isCollected
+                ? '✓ Paid in Full'
+                : prevPaid > 0
+                  ? `Collect Due ₹${numCollecting.toFixed(2)}`
+                  : liveRemainingDue > 0
+                    ? `Collect ₹${numCollecting.toFixed(2)} (Partial Payment)`
+                    : `Collect ₹${numCollecting.toFixed(2)} (Full Payment)`}
             </button>
             <button
               type="button"
               className="secondary billing-btn-invoice"
-              disabled={!activeReport || due > 0}
-              title={due > 0 ? `Collect remaining balance of ₹${dueString} before generating invoice` : 'View or print invoice'}
+              disabled={!activeReport || currentDue > 0}
+              title={
+                currentDue > 0
+                  ? `Cannot generate invoice: Outstanding balance due of ₹${currentDue.toFixed(2)}. Complete full payment to generate the ₹${reportFee.toFixed(2)} Tax Invoice.`
+                  : `View or print full ₹${reportFee.toFixed(2)} Tax Invoice`
+              }
               onClick={() => onInvoice(activeReport)}
             >
               View / Print Invoice
@@ -3256,11 +3367,19 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
           <div className="billing-collected-banner">
             <span className="billing-collected-icon">✓</span>
             <div className="billing-collected-text">
-              <strong>Payment Collected</strong>
+              <strong>Payment Completed in Full</strong>
               <span>
-                Amount ₹{(Number(activeReport.paid) || numReceived).toFixed(2)} was collected on {activeReport.paidOn || 'record'} via {activeReport.paymentMethod || paymentMode}. Payment is finalized and cannot be collected again.
+                Total service bill of ₹{reportFee.toFixed(2)} is fully paid (₹{reportPaid.toFixed(2)} received) via {activeReport.paymentMethod || paymentMode} on {activeReport.paidOn || 'record'}. Outstanding due is ₹0.00.
               </span>
             </div>
+            <button
+              type="button"
+              className="billing-btn-save"
+              style={{ marginLeft: 'auto', background: '#2563eb' }}
+              onClick={() => onInvoice(activeReport)}
+            >
+              🖨️ View / Print Tax Invoice
+            </button>
           </div>
         )}
       </form>
@@ -3269,7 +3388,7 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
         <header className="billing-table-header">
           <div>
             <h2>Collection register</h2>
-            <p>Click any patient row to review details, collect balance or view Tax Invoice.</p>
+            <p>Click any patient row to review details, collect pending due or view full Tax Invoice.</p>
           </div>
           <span className="directory-count">{reports.length} bills</span>
         </header>
@@ -3285,7 +3404,6 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
                 <th>Received</th>
                 <th>Balance due</th>
                 <th>Payment mode</th>
-                {/* <th>Action</th> */}
                 <th>Invoice</th>
               </tr>
             </thead>
@@ -3298,7 +3416,6 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
                   const reportDue = Math.max(0, feeNum - discNum - paidNum);
                   const patient = patients.find((p) => p.id === report.patientId);
                   const isSelected = report.id === activeReport?.id;
-                  const isPaid = report.isCollected || (paidNum > 0 && reportDue === 0);
                   return (
                     <tr
                       key={report.id}
@@ -3316,44 +3433,25 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
                       <td>₹{paidNum.toFixed(2)}</td>
                       <td>
                         {reportDue > 0 ? (
-                          <span className="due-badge">₹{reportDue.toFixed(2)}</span>
+                          <span className="due-badge" title="Click row to collect due">₹{reportDue.toFixed(2)} Due</span>
                         ) : (
                           <span className="status final">Paid</span>
                         )}
                       </td>
                       <td><span className="payment-mode-tag">{report.paymentMethod || 'Cash'}</span></td>
-                      {/* <td onClick={(e) => e.stopPropagation()}>
-                        {isPaid ? (
-                          <button
-                            type="button"
-                            className="small secondary btn-collected-action"
-                            disabled
-                            title="Payment has already been collected in full for this bill"
-                          >
-                            ✓ Collected
-                          </button>
-                        ) : (
-                          <button
-                            type="button"
-                            className="small"
-                            onClick={() => {
-                              setSelectedReportId(report.id);
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                          >
-                            {paidNum > 0 ? 'Collect balance' : 'Collect'}
-                          </button>
-                        )}
-                      </td> */}
                       <td onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           className="secondary small"
                           disabled={reportDue > 0}
-                          title={reportDue > 0 ? `Collect remaining balance of ₹${reportDue.toFixed(2)} before generating invoice` : 'View or print tax invoice'}
+                          title={
+                            reportDue > 0
+                              ? `Cannot generate invoice: Collect balance due of ₹${reportDue.toFixed(2)} first`
+                              : `View or print full ₹${feeNum.toFixed(2)} Tax Invoice`
+                          }
                           onClick={() => onInvoice(report)}
                         >
-                          Invoice
+                          {reportDue > 0 ? 'Due Pending' : 'Invoice'}
                         </button>
                       </td>
                     </tr>
@@ -3361,7 +3459,7 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
                 })
               ) : (
                 <tr>
-                  <td colSpan="9" className="empty">
+                  <td colSpan="8" className="empty">
                     No billing records yet. Book tests for a patient to create a bill.
                   </td>
                 </tr>
