@@ -1407,49 +1407,73 @@ nav button:hover {
 
 .app-topbar {
   max-width: 1180px;
-  min-height: 72px;
-  margin: 0 auto 25px;
+  min-height: 56px;
+  margin: 0 auto 22px;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  border-bottom: 1px solid #dfe6f3;
+  background: #ffffff;
+  border: 1px solid #dfe7f5;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(30, 58, 138, 0.04);
   color: #1d2b4f;
+  box-sizing: border-box;
 }
 
 .app-topbar>div {
-  display: grid;
-  gap: 3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .app-topbar b {
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: .01em;
 }
 
 .topbar-kicker {
-  color: #5570b5;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .15em;
+  color: #1e3a8a;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: .02em;
 }
 
 .topbar-actions {
   display: flex !important;
   grid-template-columns: none !important;
   align-items: center;
+  margin-top: 0 !important;
   gap: 12px;
   color: #64748f;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .secure-badge {
-  padding: 6px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: 99px;
-  background: #eaf7ef;
-  color: #24714a;
-  font-size: 10px;
-  font-weight: 800;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.topbar-date {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
 .page-head {
@@ -1794,49 +1818,73 @@ nav button:hover {
 
 .app-topbar {
   max-width: 1180px;
-  min-height: 72px;
-  margin: 0 auto 25px;
+  min-height: 56px;
+  margin: 0 auto 22px;
+  padding: 10px 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  border-bottom: 1px solid var(--line);
-  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid #dfe7f5;
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(30, 58, 138, 0.04);
+  color: #1d2b4f;
+  box-sizing: border-box;
 }
 
 .app-topbar>div {
-  display: grid;
-  gap: 3px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .app-topbar b {
-  font-size: 13px;
+  font-size: 14px;
   letter-spacing: .01em;
 }
 
 .topbar-kicker {
-  color: #5570b5;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: .15em;
+  color: #1e3a8a;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: .02em;
 }
 
 .topbar-actions {
   display: flex !important;
   grid-template-columns: none !important;
   align-items: center;
+  margin-top: 0 !important;
   gap: 12px;
-  color: var(--muted);
-  font-size: 12px;
+  color: #64748f;
+  font-size: 13px;
 }
 
 .secure-badge {
-  padding: 6px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
   border-radius: 99px;
-  background: #eaf7ef;
-  color: #24714a;
-  font-size: 10px;
-  font-weight: 800;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.topbar-date {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 12.5px;
+  font-weight: 600;
 }
 
 .page-head {

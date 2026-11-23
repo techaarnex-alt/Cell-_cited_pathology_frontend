@@ -1923,9 +1923,24 @@ function App() {
           <div className="login-services-grid">
             <div className="service-chip">
               <span className="chip-bullet">•</span>
-              <b>Full Body Checkup Available </b>
+              <b>All Types  Pathology Tests Available </b>
             </div>
-
+            <div className="service-chip">
+              <span className="chip-bullet">•</span>
+              <b>24x7 Sample Collection Facility </b>
+            </div>
+            <div className="service-chip">
+              <span className="chip-bullet">•</span>
+              <b>Home Sample Collection Available </b>
+            </div>
+            <div className="service-chip">
+              <span className="chip-bullet">•</span>
+              <b>Fast & Reliable Report Delivery</b>
+            </div>
+            <div className="service-chip">
+              <span className="chip-bullet">•</span>
+              <b>Full Body Health Checkup Package</b>
+            </div>
           </div>
 
           <div className="login-contact-card">
@@ -2157,7 +2172,15 @@ function App() {
     {toastElement && createPortal(toastElement, document.body)}
     <aside><div className="brand"><CellCitedMark compact /></div><nav>{[['dashboard', 'Dashboard'], ['patients', 'Patients & Registration'], ['newreport', 'Test Booking'], ['billing', 'Billing'], ['results', 'Result entry'], ['reports', 'Reports'], ['doctors', 'Doctors'], ['tests', 'Test catalogue'], ['business', 'Business report'], ['profile', 'Profile'], ['setting', 'Settings']].map(([key, label]) => <button key={key} className={view === key ? 'active' : ''} onClick={() => setView(key)}><NavIcon name={key} /><span>{label}</span></button>)}</nav><button className="logout" onClick={handleLogout}><NavIcon name="logout" /><span>Log out</span></button><p className="aarnex-credit">Created &amp; Designed by <b>Aarnex Tech</b></p></aside>
     <main className="workspace">
-      <header className="app-topbar"><div><span className="topbar-kicker">CCPL · BARABANKI</span><b>Laboratory information system</b></div><div className="topbar-actions"><span className="secure-badge">● Secure local workspace</span><span>{date()}</span></div></header>
+      <header className="app-topbar">
+        <div>
+          <span className="topbar-kicker">Welcome To Cell Cited Pathology Lab</span>
+        </div>
+        <div className="topbar-actions">
+          <span className="secure-badge">● Secure local workspace</span>
+          <span className="topbar-date">{date()}</span>
+        </div>
+      </header>
       {view === 'dashboard' && <>
         <header className="page-head">
           <div><h1 style={{ color: '#1d2c62', letterSpacing: '0.01em', margin: '4px 0 7px' }}>OPERATIONS / OVERVIEW</h1></div>
