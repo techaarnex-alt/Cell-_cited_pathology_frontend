@@ -1916,27 +1916,16 @@ function App() {
 
           <span className="login-eyebrow">PATHOLOGY · HEALTH CARE</span>
           <h1 className="login-title">Cell Cited Pathology Lab <span className="sub-abbr">(CCPL)</span></h1>
-          <p className="login-intro">
+          {/* <p className="login-intro">
             Comprehensive diagnostic services with computerized laboratory workflow and accredited medical reports.
-          </p>
+          </p> */}
 
           <div className="login-services-grid">
             <div className="service-chip">
               <span className="chip-bullet">•</span>
-              <b>Blood Tests</b>
+              <b>Full Body Checkup Available </b>
             </div>
-            <div className="service-chip">
-              <span className="chip-bullet">•</span>
-              <b>Full Body Checkup</b>
-            </div>
-            <div className="service-chip">
-              <span className="chip-bullet">•</span>
-              <b>CBC Lipid Profile</b>
-            </div>
-            <div className="service-chip">
-              <span className="chip-bullet">•</span>
-              <b>Thyroid Profile</b>
-            </div>
+
           </div>
 
           <div className="login-contact-card">

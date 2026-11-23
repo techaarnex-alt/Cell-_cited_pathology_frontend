@@ -886,10 +886,14 @@ input[disabled] {
 .login-brand-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 8px;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.login-brand-header .cell-cited-mark {
+  margin-bottom: 0 !important;
 }
 
 .login-doctor-tag {
@@ -4116,16 +4120,19 @@ button:hover {
   .profile-details-card {
     padding: 18px 16px;
   }
+
   .profile-detail-row {
     flex-direction: column;
     gap: 4px;
     align-items: flex-start;
     padding: 11px 0;
   }
+
   .profile-detail-label {
     width: auto;
     font-size: 13px;
   }
+
   .profile-detail-value {
     font-size: 14px;
   }
@@ -4374,9 +4381,9 @@ button:hover {
   .settings-card {
     padding: 20px 16px;
   }
+
   .settings-account-banner {
     flex-direction: column;
     align-items: flex-start;
   }
 }
-
