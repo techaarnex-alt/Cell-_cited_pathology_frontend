@@ -2398,18 +2398,72 @@ function App() {
           <fieldset>
             <legend>Patient and billing</legend>
             <div className="form-grid">
-              <label className="wide">Patient
-                <select name="patientId" required value={newReportPatientId} onChange={(event) => {
-                  const patId = event.target.value;
-                  setNewReportPatientId(patId);
-                  const pat = data.patients.find((p) => p.id === patId);
-                  if (pat) setNewReportDoctorId(pat.doctorId || '');
-                }}>
-                  <option value="" disabled>Select patient</option>
-                  {data.patients.map((patient) => (
-                    <option value={patient.id} key={patient.id}>{patient.id} · {patientName(patient)}</option>
-                  ))}
+              <label className="wide">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span>Patient</span>
+                  {newReportPatientId && (
+                    <button
+                      type="button"
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        color: '#2563eb',
+                        background: 'none',
+                        border: 'none',
+                        cursor: 'pointer',
+                        padding: 0,
+                        textDecoration: 'underline',
+                      }}
+                      onClick={() => setNewReportPatientId('')}
+                    >
+                      Change / Show all patients
+                    </button>
+                  )}
+                </div>
+                <select
+                  name="patientId"
+                  required
+                  value={newReportPatientId}
+                  onChange={(event) => {
+                    const patId = event.target.value;
+                    setNewReportPatientId(patId);
+                    const pat = data.patients.find((p) => p.id === patId);
+                    if (pat) setNewReportDoctorId(pat.doctorId || '');
+                  }}
+                >
+                  {newReportPatientId && data.patients.find((p) => p.id === newReportPatientId) ? (
+                    (() => {
+                      const p = data.patients.find((item) => item.id === newReportPatientId);
+                      return (
+                        <option value={p.id} key={p.id}>
+                          {p.id} · {patientName(p)}
+                        </option>
+                      );
+                    })()
+                  ) : (
+                    <>
+                      <option value="" disabled>Select patient</option>
+                      {data.patients.map((patient) => (
+                        <option value={patient.id} key={patient.id}>
+                          {patient.id} · {patientName(patient)}
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
+                {newReportPatientId && (() => {
+                  const pat = data.patients.find((p) => p.id === newReportPatientId);
+                  if (!pat) return null;
+                  return (
+                    <div className="billing-patient-meta" style={{ marginTop: '8px' }}>
+                      <span>Patient ID: <b>{pat.id}</b></span>
+                      <span>Name: <b>{patientName(pat)}</b></span>
+                      <span>Age / Gender: <b>{pat.age} {pat.ageUnit || 'Years'} / {pat.gender}</b></span>
+                      <span>Mobile: <b>{pat.mobile || '—'}</b></span>
+                      <span>Referred by: <b>{pat.reference || 'Self'}</b></span>
+                    </div>
+                  );
+                })()}
               </label>
               <label>Referred by
                 <select name="doctorId" value={newReportDoctorId} onChange={(event) => setNewReportDoctorId(event.target.value)}>
