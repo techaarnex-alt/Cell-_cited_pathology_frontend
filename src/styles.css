@@ -868,10 +868,11 @@ input[disabled] {
 .login {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 1fr minmax(320px, 440px);
-  gap: clamp(30px, 4vw, 60px);
+  grid-template-columns: minmax(320px, 560px) minmax(320px, 420px);
+  justify-content: center;
+  gap: clamp(28px, 4vw, 56px);
   align-items: center;
-  padding: clamp(24px, 4.5vw, 64px);
+  padding: clamp(20px, 3.5vw, 48px);
   overflow: hidden;
   background: radial-gradient(circle at 17% 15%, #3f63b4 0, #263f85 36%, #172959 70%);
   color: #eff4ff;
