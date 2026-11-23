@@ -1,0 +1,307 @@
+.report-stack {
+  width: 210mm;
+  margin: 0 auto;
+}
+
+.report-paper {
+  position: relative;
+  isolation: isolate;
+  width: 210mm;
+  height: 297mm;
+  margin: 0 auto 10mm;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(30, 57, 111, 0.14);
+}
+
+.report-art {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: #fff;
+  border-top: 13mm solid #fff;
+  border-bottom: 11mm solid #263f85;
+}
+
+.report-art::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 4px;
+  background: #ee5559;
+}
+
+.report-art::after {
+  content: "This report is intended to help clinical management. It is not valid for medico-legal purposes. Discrepancies due to technical or typing errors should be reported within 3 days for correction.";
+  position: absolute;
+  right: 14mm;
+  bottom: 3.3mm;
+  left: 14mm;
+  color: #fff;
+  font: 700 8px/1.25 Arial, sans-serif;
+  text-align: center;
+}
+
+.report-content {
+  position: absolute;
+  z-index: 1;
+  top: 45mm;
+  right: 12mm;
+  bottom: 25mm;
+  left: 12mm;
+  color: #253a58;
+}
+
+.report-letterhead {
+  position: absolute;
+  right: -12mm;
+  top: -38mm;
+  left: -12mm;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 29mm;
+  padding: 5mm 12mm 4mm;
+  border-bottom: 1.4mm solid #304d9f;
+  background: #fff;
+}
+
+.report-letterhead-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.report-letterhead-contact {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+  gap: 2px;
+}
+
+.report-letterhead-contact b {
+  font-size: 11px;
+  color: #1e3a8a;
+}
+
+.report-letterhead-contact span {
+  font-size: 10px;
+  color: #334155;
+}
+
+.report-letterhead-contact small {
+  font-size: 9px;
+  color: #64748b;
+}
+
+.patient-card {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  margin-bottom: 12px;
+  font-size: 11px;
+}
+
+.patient-card div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.patient-card p {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+}
+
+.patient-card b {
+  color: #1e293b;
+  min-width: 105px;
+}
+
+.report-title {
+  text-align: center;
+  margin: 8px 0 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.report-title span {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1e3a8a;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.report-title small {
+  font-size: 9px;
+  color: #64748b;
+}
+
+.continuation-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 6px;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #1e3a8a;
+  font-size: 12px;
+  color: #1e3a8a;
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 10px;
+}
+
+.report-table th {
+  background: #f1f5f9;
+  color: #1e293b;
+  font-weight: 700;
+  padding: 6px 8px;
+  text-align: left;
+  border-bottom: 1.5px solid #94a3b8;
+  font-size: 10.5px;
+}
+
+.report-table th:nth-child(2) {
+  text-align: center;
+}
+
+.report-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.report-table td:nth-child(2) {
+  text-align: center;
+}
+
+.report-table tr.department td {
+  background: #f8fafc;
+  color: #1e3a8a;
+  font-weight: 800;
+  font-size: 11px;
+  padding: 6px 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-top: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.report-table tr.out-of-range td:nth-child(2) b {
+  color: #dc2626;
+  font-weight: 800;
+}
+
+.report-table td small {
+  display: block;
+  color: #64748b;
+  font-size: 8.5px;
+}
+
+.report-end {
+  text-align: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #64748b;
+  margin: 12px 0 8px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.signature {
+  position: absolute;
+  bottom: 6mm;
+  right: 12mm;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.signature-image {
+  height: 40px;
+  margin-bottom: 2px;
+}
+
+.doctor-signature-canvas {
+  height: 38px;
+  width: auto;
+}
+
+.signature b {
+  font-size: 11px;
+  color: #1e293b;
+}
+
+.signature strong {
+  font-size: 10px;
+  color: #334155;
+}
+
+.signature small {
+  font-size: 8px;
+  color: #64748b;
+}
+
+.report-page-number {
+  position: absolute;
+  bottom: 4mm;
+  right: 14mm;
+  font-size: 9px;
+  color: #ffffff;
+  font-weight: 700;
+  z-index: 2;
+}
+
+.report-print-control {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.report-print-control select {
+  height: 38px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  font-size: 13px;
+}
+
+.without-letterhead .report-art,
+.without-letterhead .report-letterhead {
+  display: none !important;
+}
+
+.without-letterhead .report-content {
+  top: 40mm;
+}
+
+@media print {
+  .report-stack {
+    margin: 0;
+    width: 210mm;
+  }
+  .report-paper {
+    margin: 0;
+    box-shadow: none;
+    page-break-after: always;
+    break-after: page;
+    height: 297mm;
+  }
+  .report-paper:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+}

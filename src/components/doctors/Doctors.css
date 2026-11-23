@@ -1,0 +1,134 @@
+.doctor-form > header,
+.doctor-directory-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+
+.doctor-form > header h2,
+.doctor-directory-head h2 {
+  margin: 0 0 5px;
+}
+
+.doctor-form > header p,
+.doctor-directory-head p {
+  margin: 0;
+  color: #6b7e9b;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.doctor-add-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.doctor-add-grid .wide {
+  grid-column: span 4;
+}
+
+.doctor-add-grid label small {
+  color: #71819b;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.directory-count {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid #d7e1f2;
+  border-radius: 999px;
+  background: #f5f8fe;
+  color: #365a9e;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.doctors-table {
+  min-width: 1390px;
+}
+
+.doctors-table th:nth-child(1) {
+  width: 18%;
+}
+
+.doctors-table th:nth-child(2) {
+  width: 16%;
+}
+
+.doctors-table th:nth-child(3) {
+  width: 13%;
+}
+
+.doctors-table th:nth-child(4) {
+  width: 26%;
+}
+
+.doctors-table th:nth-child(5) {
+  width: 16%;
+}
+
+.doctors-table td {
+  vertical-align: middle;
+}
+
+.doctors-table td > input {
+  width: 100%;
+  min-width: 110px;
+  padding: 8px 9px;
+  border: 1px solid #c7d3e8;
+  border-radius: 7px;
+  color: #243754;
+  font: inherit;
+  background: #fff;
+}
+
+.doctors-table td > input:focus {
+  border-color: #476eb7;
+  outline: 3px solid #e5ecff;
+}
+
+.doctors-table td:first-child b {
+  display: block;
+  color: #263f85;
+}
+
+.doctors-table td:first-child small {
+  display: block;
+  margin-top: 3px;
+  color: #7b8da9;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.percentage-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.percentage-field input {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.earnings-cell {
+  white-space: nowrap;
+}
+
+.earnings-cell b {
+  display: block;
+  color: #1e3a8a;
+  font-size: 13px;
+}
+
+.earnings-cell small {
+  color: #64748b;
+  font-size: 10px;
+}

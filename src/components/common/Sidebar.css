@@ -1,0 +1,118 @@
+aside {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  gap: 26px;
+  padding: 28px 16px 18px;
+  background: linear-gradient(165deg, #1d2c62 0%, #263f85 55%, #172657 100%);
+  box-shadow: 8px 0 32px rgba(28, 44, 94, 0.14);
+}
+
+.brand {
+  padding: 0 9px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.cell-cited-mark {
+  gap: 11px;
+}
+
+.cell-cited-mark b {
+  font-size: 21px;
+  color: #fff;
+}
+
+.cell-cited-mark strong {
+  color: #bfcdf4;
+  font-weight: 650;
+}
+
+.cell-cited-mark em {
+  color: #ff7476;
+}
+
+.logo-image {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.24);
+}
+
+nav {
+  gap: 4px;
+}
+
+nav button,
+.logout {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+nav button {
+  position: relative;
+  border-radius: 9px;
+  padding: 12px 14px;
+  color: #cbd7fb;
+  font-size: 13px;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.nav-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  opacity: 0.88;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+nav button.active .nav-icon {
+  color: #ff9a9d;
+  opacity: 1;
+}
+
+nav button:hover .nav-icon {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+nav button.active {
+  color: #fff;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.19),
+    rgba(255, 255, 255, 0.07)
+  );
+  box-shadow: inset 3px 0 0 #ff7377;
+}
+
+nav button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
+
+.logout {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #dce5ff;
+  justify-content: center;
+}
+
+.logout .nav-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.aarnex-credit {
+  margin: 2px 4px 0;
+  color: #9fb2e6;
+  font-size: 10px;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.aarnex-credit b {
+  color: #fff;
+  font-weight: 750;
+}

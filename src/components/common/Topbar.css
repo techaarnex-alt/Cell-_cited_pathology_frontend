@@ -1,0 +1,75 @@
+.app-topbar {
+  max-width: 1180px;
+  min-height: auto;
+  margin: 26px auto 14px;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  color: #1d2b4f;
+  box-sizing: border-box;
+}
+
+.app-topbar > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-topbar b {
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.topbar-kicker {
+  color: #1e3a8a;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.topbar-actions {
+  display: flex !important;
+  grid-template-columns: none !important;
+  align-items: center;
+  margin-top: 0 !important;
+  gap: 12px;
+  color: #64748f;
+  font-size: 13px;
+}
+
+.secure-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 99px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.topbar-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #dce4f3;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 15px;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(30, 58, 138, 0.04);
+}
+
+.topbar-date .calendar-icon {
+  width: 15px;
+  height: 15px;
+  color: #64748b;
+  flex-shrink: 0;
+}

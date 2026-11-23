@@ -1,0 +1,65 @@
+.catalogue-add-grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.catalogue-panel > header {
+  margin-bottom: 16px;
+}
+
+.catalogue-table {
+  min-width: 900px;
+}
+
+.catalogue-table th:nth-child(1) {
+  width: 22%;
+}
+
+.catalogue-table th:nth-child(2) {
+  width: 16%;
+}
+
+.catalogue-table th:nth-child(3) {
+  width: 12%;
+}
+
+.catalogue-table th:nth-child(4) {
+  width: 24%;
+}
+
+.catalogue-table th:nth-child(5) {
+  width: 12%;
+}
+
+.catalogue-table td {
+  vertical-align: middle;
+}
+
+.catalogue-table input,
+.catalogue-table textarea {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.catalogue-table textarea {
+  resize: vertical;
+}
+
+.catalogue-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.catalogue-actions button.danger {
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.catalogue-actions button.danger:hover {
+  background: #fef2f2;
+}

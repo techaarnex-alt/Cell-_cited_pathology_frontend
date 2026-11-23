@@ -1,0 +1,40 @@
+.patient-record {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media screen and (max-width: 900px) {
+  .patient-record {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media screen and (max-width: 500px) {
+  .patient-record {
+    grid-template-columns: 1fr;
+  }
+}
+
+.patient-record > div {
+  display: grid;
+  gap: 5px;
+  padding: 14px;
+  border: 1px solid #dce5f3;
+  border-radius: 10px;
+  background: #f9fbff;
+}
+
+.patient-record span {
+  color: #667894;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.patient-record b {
+  color: #263f85;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
