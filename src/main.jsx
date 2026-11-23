@@ -3024,6 +3024,7 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
   const reportFee = Number(activeReport?.fee || 0);
   const reportDisc = Number(activeReport?.discount || 0);
   const prevPaid = Number(activeReport?.paid || 0);
+  const reportPaid = prevPaid;
   const netTotal = Math.max(0, reportFee - reportDisc);
   const currentDue = Math.max(0, netTotal - prevPaid);
 
@@ -3369,7 +3370,7 @@ function Billing({ reports, patients, onCollect, onInvoice }) {
             <div className="billing-collected-text">
               <strong>Payment Completed in Full</strong>
               <span>
-                Total service bill of ₹{reportFee.toFixed(2)} is fully paid (₹{reportPaid.toFixed(2)} received) via {activeReport.paymentMethod || paymentMode} on {activeReport.paidOn || 'record'}. Outstanding due is ₹0.00.
+                Total service bill of ₹{reportFee.toFixed(2)} is fully paid (₹{reportPaid.toFixed(2)} received) via {activeReport?.paymentMethod || paymentMode} on {activeReport?.paidOn || 'record'}. Outstanding due is ₹0.00.
               </span>
             </div>
             <button
