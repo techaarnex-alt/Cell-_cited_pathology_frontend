@@ -2507,60 +2507,7 @@ button:hover {
 }
 
 .catalogue-table {
-  min-width: 1120px;
-}
-
-.catalogue-table th:nth-child(1) {
-  width: 20%;
-}
-
-.catalogue-table th:nth-child(2) {
-  width: 16%;
-}
-
-.catalogue-table th:nth-child(3) {
-  width: 12%;
-}
-
-.catalogue-table th:nth-child(4) {
-  width: 25%;
-}
-
-.catalogue-table th:nth-child(5) {
-  width: 10%;
-}
-
-.catalogue-table td {
-  vertical-align: middle;
-}
-
-.catalogue-table input,
-.catalogue-table textarea {
   width: 100%;
-  min-width: 0;
-  padding: 8px 9px;
-  border: 1px solid #c7d3e8;
-  border-radius: 7px;
-  color: #243754;
-  font: inherit;
-  background: #fff;
-  resize: vertical;
-}
-
-.catalogue-table textarea {
-  min-height: 52px;
-}
-
-.catalogue-actions {
-  display: grid;
-  gap: 7px;
-  min-width: 115px;
-}
-
-.catalogue-actions button {
-  width: 100%;
-  padding: 8px;
-  font-size: 10px;
 }
 
 .danger {

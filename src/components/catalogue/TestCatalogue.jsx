@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import './TestCatalogue.css';
 
-export function CatalogueRow({ test, onSave, onRemove }) {
+export function CatalogueRow({ test, index, onSave, onRemove }) {
   const [draft, setDraft] = useState(test);
   useEffect(() => setDraft(test), [test]);
 
@@ -11,6 +11,9 @@ export function CatalogueRow({ test, onSave, onRemove }) {
 
   return (
     <tr>
+      <td>
+        <b>{index + 1}</b>
+      </td>
       <td>
         <b>{test.name}</b>
       </td>
@@ -46,21 +49,23 @@ export function CatalogueRow({ test, onSave, onRemove }) {
           aria-label={`${test.name} rate`}
         />
       </td>
-      <td className="catalogue-actions">
-        <button
-          type="button"
-          className="small"
-          onClick={() => onSave(test.name, draft)}
-        >
-          Save changes
-        </button>
-        <button
-          type="button"
-          className="secondary small danger"
-          onClick={() => onRemove(test.name)}
-        >
-          Remove
-        </button>
+      <td>
+        <div className="catalogue-actions">
+          <button
+            type="button"
+            className="small"
+            onClick={() => onSave(test.name, draft)}
+          >
+            Save changes
+          </button>
+          <button
+            type="button"
+            className="secondary small danger"
+            onClick={() => onRemove(test.name)}
+          >
+            Remove
+          </button>
+        </div>
       </td>
     </tr>
   );
@@ -79,6 +84,7 @@ export function Catalogue({ tests, onSave, onRemove }) {
         <table className="app-table catalogue-table">
           <thead>
             <tr>
+              <th>S.No</th>
               <th>Test</th>
               <th>Category</th>
               <th>Units</th>
@@ -88,10 +94,11 @@ export function Catalogue({ tests, onSave, onRemove }) {
             </tr>
           </thead>
           <tbody>
-            {tests.map((test) => (
+            {tests.map((test, index) => (
               <CatalogueRow
-                key={test.name}
+                key={test.id || test.name || index}
                 test={test}
+                index={index}
                 onSave={onSave}
                 onRemove={onRemove}
               />
@@ -110,8 +117,8 @@ export default function TestCatalogue() {
     <>
       <header className="page-head">
         <div>
-          <span className="eyebrow">LABORATORY CONFIGURATION</span>
-          <h1>Available Tests &amp; Prices</h1>
+          {/* <span className="eyebrow">LABORATORY CONFIGURATION</span> */}
+          <h1>AVAILABLE TESTS & PRICES</h1>
         </div>
         <button className="secondary" onClick={printCatalogue}>
           Print test availability / Save PDF

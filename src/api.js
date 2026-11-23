@@ -50,6 +50,15 @@ export const api = {
     return handleResponse(res);
   },
 
+  async updateProfile(payload) {
+    const res = await fetch(`${API_BASE}/auth/profile`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(res);
+  },
+
   logout() {
     sessionStorage.removeItem('cell-cited-token');
     sessionStorage.removeItem('cell-cited-session');
