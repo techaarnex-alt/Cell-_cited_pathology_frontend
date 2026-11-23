@@ -308,6 +308,17 @@ const mergeCatalogue = (savedTests = [], applyCurrentReferences = false) => {
 };
 
 const date = () => new Intl.DateTimeFormat('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date());
+const formatDisplayDate = (d = new Date()) => {
+  try {
+    const dt = d instanceof Date ? d : new Date(d);
+    const day = dt.getDate();
+    const month = dt.toLocaleString('en-US', { month: 'short' });
+    const year = dt.getFullYear();
+    return `${day} ${month} ${year}`;
+  } catch {
+    return '23 Nov 2026';
+  }
+};
 const makeId = (prefix, count) => `${prefix}-${String(count + 1).padStart(4, '0')}`;
 const dateFromRecord = (value) => {
   if (!value) return null;
@@ -2180,16 +2191,24 @@ function App() {
           <span className="topbar-kicker">WELCOME TO CELL CITED PATHOLOGY LAB</span>
         </div>
         <div className="topbar-actions">
-
-          <span className="topbar-date">{date()}</span>
+          {/* <span className="secure-badge">● Secure local workspace</span> */}
+          <span className="topbar-date" title="Today's Date">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="calendar-icon">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span>{formatDisplayDate()}</span>
+          </span>
         </div>
       </header>
       {view === 'dashboard' && <>
         <header className="page-head">
           <div>
-            <span className="eyebrow">LABORATORY OVERVIEW</span>
-            <h1 style={{ color: '#1d2c62', letterSpacing: '0.01em', margin: '4px 0 2px' }}>Dashboard</h1>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px', fontWeight: 500 }}>Today, {date()}</p>
+            <span className="eyebrow">OPERATIONS / OVERVIEW</span>
+
+
           </div>
           <button onClick={() => setView('patients')}>+ New patient</button>
         </header>
@@ -2337,10 +2356,10 @@ function App() {
           </section>
         </div>
 
-        <section className="panel">
+        {/* <section className="panel">
           <h2>Recent reports</h2>
           <ReportList reports={data.reports.slice(0, 6)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} />
-        </section>
+        </section> */}
       </>}
       {view === 'patients' && <><header className="page-head"><div><span className="eyebrow">PATIENTS</span>  </div><button onClick={() => registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>+ Register patient</button></header><section className="panel patient-register"><header><div><h2>Registered patients</h2><p>Find a patient by name, patient ID or mobile number.</p></div></header><label className="patient-search">Search by patient ID or name<input value={patientSearch} onChange={(event) => setPatientSearch(event.target.value)} placeholder="Search by patient name, ID or mobile number" /></label><PatientList patients={data.patients} reports={data.reports} search={patientSearch} onOpen={(patient) => { setPatientRecordId(patient.id); setView('patientrecord'); }} onNewReport={(patient) => { setNewReportPatientId(patient.id); setView('newreport'); }} /></section><form ref={registrationRef} className="panel patient-form patient-visit-form" onSubmit={registerPatient}><h2>Patient registration</h2><div className="form-grid patient-details-grid"><label>Title<select name="title" defaultValue="" onChange={(event) => setRegistrationGender(genderForTitle(event.target.value))}><option value="">Select title</option><option>Mr.</option><option>Mrs.</option><option>Ms.</option><option>Master</option><option>Baby</option><option>Dr.</option></select></label><label>Patient name<input name="name" required /></label><label>Age<input name="age" type="number" min="0" required /></label><label>Age unit<select name="ageUnit" defaultValue="Years"><option>Years</option><option>Months</option><option>Days</option></select></label><label>Gender<select name="gender" value={registrationGender} onChange={(event) => setRegistrationGender(event.target.value)} required><option value="" disabled>Select gender</option><option>Female</option><option>Male</option><option>Other</option></select></label><label>Mobile<input name="mobile" type="tel" inputMode="numeric" placeholder="10-digit mobile number" /></label><label>Referred by<select name="doctorId" defaultValue=""><option value="">Self / direct walk-in</option>{data.doctors.map((doctor) => <option value={doctor.id} key={doctor.id}>{doctor.doctorCode} · {doctor.name} ({doctor.referralPercentage}%)</option>)}</select></label><label>Sample type<select name="sampleType" defaultValue="Blood">{SAMPLE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label>Collected on<input name="collectedOn" defaultValue={date()} placeholder="DD/MM/YYYY" /></label><label className="wide">Address<input name="address" placeholder="Patient address (optional)" /></label></div><fieldset className="visit-tests"><legend>Select tests for this visit</legend><p className="field-help">Choose one or more tests. A draft report and billing entry will be created from these selections.</p><InvestigationPicker key={bookingPickerKey} catalogue={catalogue} testGroups={testGroups} booking /></fieldset><button>Save patient</button></form></>}
       {view === 'patientrecord' && recordPatient && <><header className="page-head"><div><span className="eyebrow">PATIENT RECORD</span><h1>{patientName(recordPatient)}</h1><p>{recordPatient.id} · {recordPatient.mobile || 'No mobile number recorded'}</p></div><div><button className="secondary" onClick={() => setView('patients')}>Back to patients</button><button onClick={() => { setNewReportPatientId(recordPatient.id); setView('newreport'); }}>+ Test booking</button></div></header><section className="panel patient-record"><div><span>Patient ID</span><b>{recordPatient.id}</b></div><div><span>Age / gender</span><b>{recordPatient.age} {recordPatient.ageUnit || 'Years'} / {recordPatient.gender}</b></div><div><span>Mobile</span><b>{recordPatient.mobile || '—'}</b></div><div><span>Sample type</span><b>{recordPatient.sampleType || 'Blood'}</b></div><div><span>Registered on</span><b>{recordPatient.registeredOn || '—'}</b></div><div><span>Referred by</span><b>{recordPatient.reference || 'Self'}</b></div><div><span>Address</span><b>{recordPatient.address || '—'}</b></div></section><section className="panel"><h2>Report history</h2><ReportList reports={data.reports.filter((report) => report.patientId === recordPatient.id)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} /></section></>}

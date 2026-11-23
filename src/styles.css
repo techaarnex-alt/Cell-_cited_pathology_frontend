@@ -1467,13 +1467,22 @@ nav button:hover {
 .topbar-date {
   display: inline-flex;
   align-items: center;
-  padding: 5px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  color: #475569;
-  font-size: 12.5px;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #dce4f3;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 13px;
   font-weight: 600;
+  box-shadow: 0 1px 4px rgba(30, 58, 138, 0.04);
+}
+
+.topbar-date .calendar-icon {
+  width: 15px;
+  height: 15px;
+  color: #64748b;
+  flex-shrink: 0;
 }
 
 .page-head {
@@ -1878,13 +1887,22 @@ nav button:hover {
 .topbar-date {
   display: inline-flex;
   align-items: center;
-  padding: 5px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  color: #475569;
-  font-size: 12.5px;
+  gap: 8px;
+  padding: 6px 14px;
+  background: #ffffff;
+  border: 1px solid #dce4f3;
+  border-radius: 10px;
+  color: #334155;
+  font-size: 13px;
   font-weight: 600;
+  box-shadow: 0 1px 4px rgba(30, 58, 138, 0.04);
+}
+
+.topbar-date .calendar-icon {
+  width: 15px;
+  height: 15px;
+  color: #64748b;
+  flex-shrink: 0;
 }
 
 .page-head {
