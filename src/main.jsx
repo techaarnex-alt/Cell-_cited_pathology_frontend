@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { api } from './api';
@@ -2391,7 +2391,50 @@ function App() {
           <ReportList reports={data.reports.slice(0, 6)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} />
         </section> */}
       </>}
-      {view === 'patients' && <><header className="page-head"><div><span className="eyebrow">PATIENTS</span>  </div><button onClick={() => registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>+ Register patient</button></header><section className="panel patient-register"><header><div><h2>Registered patients</h2><p>Find a patient by name, patient ID or mobile number.</p></div></header><label className="patient-search">Search by patient ID or name<input value={patientSearch} onChange={(event) => setPatientSearch(event.target.value)} placeholder="Search by patient name, ID or mobile number" /></label><PatientList patients={data.patients} reports={data.reports} search={patientSearch} onOpen={(patient) => { setPatientRecordId(patient.id); setView('patientrecord'); }} onNewReport={(patient) => { setNewReportPatientId(patient.id); setView('newreport'); }} /></section><form ref={registrationRef} className="panel patient-form patient-visit-form" onSubmit={registerPatient}><h2>Patient registration</h2><div className="form-grid patient-details-grid"><label>Title<select name="title" defaultValue="" onChange={(event) => setRegistrationGender(genderForTitle(event.target.value))}><option value="">Select title</option><option>Mr.</option><option>Mrs.</option><option>Ms.</option><option>Master</option><option>Baby</option><option>Dr.</option></select></label><label>Patient name<input name="name" required /></label><label>Age<input name="age" type="number" min="0" required /></label><label>Age unit<select name="ageUnit" defaultValue="Years"><option>Years</option><option>Months</option><option>Days</option></select></label><label>Gender<select name="gender" value={registrationGender} onChange={(event) => setRegistrationGender(event.target.value)} required><option value="" disabled>Select gender</option><option>Female</option><option>Male</option><option>Other</option></select></label><label>Mobile<input name="mobile" type="tel" inputMode="numeric" placeholder="10-digit mobile number" /></label><label>Referred by<select name="doctorId" defaultValue=""><option value="">Self / direct walk-in</option>{data.doctors.map((doctor) => <option value={doctor.id} key={doctor.id}>{doctor.doctorCode} · {doctor.name} ({doctor.referralPercentage}%)</option>)}</select></label><label>Sample type<select name="sampleType" defaultValue="Blood">{SAMPLE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label>Collected on<input name="collectedOn" defaultValue={date()} placeholder="DD/MM/YYYY" /></label><label className="wide">Address<input name="address" placeholder="Patient address (optional)" /></label></div><fieldset className="visit-tests"><legend>Select tests for this visit</legend><p className="field-help">Choose one or more tests. A draft report and billing entry will be created from these selections.</p><InvestigationPicker key={bookingPickerKey} catalogue={catalogue} testGroups={testGroups} booking /></fieldset><button>Save patient</button></form></>}
+      {view === 'patients' && <>
+        <header className="page-head">
+          <div><span className="eyebrow">PATIENTS</span></div>
+          <button onClick={() => registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>+ Register patient</button>
+        </header>
+        <section className="panel patient-register">
+          <header>
+            <div>
+              <h2>Registered patients</h2>
+              <p>Find a patient by name, patient ID, mobile number or referring doctor.</p>
+            </div>
+            <span className="directory-count">{data.patients.length} patients</span>
+          </header>
+          <div className="patient-search-box-container">
+            <div className="patient-search-input-wrapper">
+              <span className="patient-search-icon">🔍</span>
+              <input
+                value={patientSearch}
+                onChange={(event) => setPatientSearch(event.target.value)}
+                placeholder="Search by patient name, ID (e.g. CCPL-0012), mobile or doctor..."
+                className="patient-search-input"
+                aria-label="Search patients"
+              />
+              {patientSearch && (
+                <button
+                  type="button"
+                  className="patient-search-clear-btn"
+                  onClick={() => setPatientSearch('')}
+                  title="Clear search"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          </div>
+          <PatientList
+            patients={data.patients}
+            reports={data.reports}
+            search={patientSearch}
+            onOpen={(patient) => { setPatientRecordId(patient.id); setView('patientrecord'); }}
+            onNewReport={(patient) => { setNewReportPatientId(patient.id); setView('newreport'); }}
+            onClearSearch={() => setPatientSearch('')}
+          />
+        </section><form ref={registrationRef} className="panel patient-form patient-visit-form" onSubmit={registerPatient}><h2>Patient registration</h2><div className="form-grid patient-details-grid"><label>Title<select name="title" defaultValue="" onChange={(event) => setRegistrationGender(genderForTitle(event.target.value))}><option value="">Select title</option><option>Mr.</option><option>Mrs.</option><option>Ms.</option><option>Master</option><option>Baby</option><option>Dr.</option></select></label><label>Patient name<input name="name" required /></label><label>Age<input name="age" type="number" min="0" required /></label><label>Age unit<select name="ageUnit" defaultValue="Years"><option>Years</option><option>Months</option><option>Days</option></select></label><label>Gender<select name="gender" value={registrationGender} onChange={(event) => setRegistrationGender(event.target.value)} required><option value="" disabled>Select gender</option><option>Female</option><option>Male</option><option>Other</option></select></label><label>Mobile<input name="mobile" type="tel" inputMode="numeric" placeholder="10-digit mobile number" /></label><label>Referred by<select name="doctorId" defaultValue=""><option value="">Self / direct walk-in</option>{data.doctors.map((doctor) => <option value={doctor.id} key={doctor.id}>{doctor.doctorCode} · {doctor.name} ({doctor.referralPercentage}%)</option>)}</select></label><label>Sample type<select name="sampleType" defaultValue="Blood">{SAMPLE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label>Collected on<input name="collectedOn" defaultValue={date()} placeholder="DD/MM/YYYY" /></label><label className="wide">Address<input name="address" placeholder="Patient address (optional)" /></label></div><fieldset className="visit-tests"><legend>Select tests for this visit</legend><p className="field-help">Choose one or more tests. A draft report and billing entry will be created from these selections.</p><InvestigationPicker key={bookingPickerKey} catalogue={catalogue} testGroups={testGroups} booking /></fieldset><button>Save patient</button></form></>}
       {view === 'patientrecord' && recordPatient && <><header className="page-head"><div><span className="eyebrow">PATIENT RECORD</span><h1>{patientName(recordPatient)}</h1><p>{recordPatient.id} · {recordPatient.mobile || 'No mobile number recorded'}</p></div><div><button className="secondary" onClick={() => setView('patients')}>Back to patients</button><button onClick={() => { setNewReportPatientId(recordPatient.id); setView('newreport'); }}>+ Test booking</button></div></header><section className="panel patient-record"><div><span>Patient ID</span><b>{recordPatient.id}</b></div><div><span>Age / gender</span><b>{recordPatient.age} {recordPatient.ageUnit || 'Years'} / {recordPatient.gender}</b></div><div><span>Mobile</span><b>{recordPatient.mobile || '—'}</b></div><div><span>Sample type</span><b>{recordPatient.sampleType || 'Blood'}</b></div><div><span>Registered on</span><b>{recordPatient.registeredOn || '—'}</b></div><div><span>Referred by</span><b>{recordPatient.reference || 'Self'}</b></div><div><span>Address</span><b>{recordPatient.address || '—'}</b></div></section><section className="panel"><h2>Report history</h2><ReportList reports={data.reports.filter((report) => report.patientId === recordPatient.id)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} /></section></>}
       {view === 'newreport' && (() => {
         const selectedBookingPatient = data.patients.find((p) => p.id === newReportPatientId) || (data.patients.length ? data.patients[0] : null);
@@ -2996,10 +3039,198 @@ function ResultForm({ report, patient, onFinalise }) {
   return <form className="panel result-form" onSubmit={(event) => onFinalise(report, event)}><header><div><h2>{report.number} · {patientName(patient)}</h2><p>{report.tests.map((test) => test.name).join(', ')}</p></div><span className="status draft">Draft</span></header><div className="table-scroll"><table className="app-table result-table"><thead><tr><th>Investigation</th><th>Observed result</th><th>Unit</th><th>Reference range</th><th>Remark</th></tr></thead><tbody>{report.tests.map((test) => <tr key={test.name}><td><b>{test.name}</b></td><td><input name={test.name} defaultValue={test.value} placeholder="Enter result" required /></td><td><input name={`${test.name}-unit`} defaultValue={test.unit} placeholder="Unit" disabled title="Unit is configured in test catalogue" /></td><td><input name={`${test.name}-range`} defaultValue={test.range} placeholder="Reference range" disabled title="Reference range is configured in test catalogue" /></td><td><input name={`${test.name}-remark`} defaultValue={test.remark} placeholder="Optional remark" /></td></tr>)}</tbody></table></div><footer style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}><div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}><label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', fontWeight: 700, color: '#334b72' }}>Reported on: <input name="reportedOn" defaultValue={report.reportedOn || date()} style={{ width: '110px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #c7d3e8' }} /></label><p style={{ margin: 0 }}>Verify observations, units, reference ranges and remarks before finalising.</p></div><button>Finalise report</button></footer></form>;
 }
 
-function PatientList({ patients, reports, search = '', onOpen, onNewReport }) {
+function PatientList({ patients, reports, search = '', onOpen, onNewReport, onClearSearch }) {
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
   const query = search.trim().toLowerCase();
-  const visiblePatients = query ? patients.filter((patient) => [patient.id, patientName(patient), patient.name, patient.mobile].filter(Boolean).some((value) => String(value).toLowerCase().includes(query))) : patients;
-  return <div className="table-scroll"><table className="app-table patient-table"><thead><tr><th>ID</th><th>Patient</th><th>Age / gender</th><th>Mobile</th><th>Referred by</th><th>Selected tests</th>{(onOpen || onNewReport) && <th>Actions</th>}</tr></thead><tbody>{visiblePatients.length ? visiblePatients.map((patient) => { const patientReports = reports.filter((report) => report.patientId === patient.id); const latestReport = patientReports[0]; return <tr key={patient.id}><td><b>{patient.id}</b></td><td>{patientName(patient)}</td><td>{patient.age} {patient.ageUnit || 'Years'} / {patient.gender}</td><td>{patient.mobile || '—'}</td><td>{patient.reference || 'Self'}</td><td>{latestReport?.tests?.length ? `${latestReport.tests.length} test${latestReport.tests.length === 1 ? '' : 's'} selected` : 'No tests selected'}</td>{(onOpen || onNewReport) && <td className="patient-actions">{onOpen && <button className="secondary small" onClick={() => onOpen(patient)}>Open record</button>}{onNewReport && <button className="small" onClick={() => onNewReport(patient)}>Test booking</button>}</td>}</tr>; }) : <tr><td colSpan={onOpen || onNewReport ? 7 : 6} className="empty">{query ? 'No matching patients found.' : 'No patients registered yet.'}</td></tr>}</tbody></table></div>;
+
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
+
+  const filteredPatients = useMemo(() => {
+    if (!query) return patients;
+    const tokens = query.split(/\s+/).filter(Boolean);
+    return patients.filter((patient) => {
+      const pName = patientName(patient) || patient.name || '';
+      const pId = patient.id || patient.patientNumber || '';
+      const pMobile = patient.mobile || '';
+      const pRef = patient.reference || patient.doctorNameSnapshot || (typeof patient.doctorId === 'object' ? patient.doctorId?.name : '') || '';
+      const pAddress = patient.address || '';
+      const combined = `${pId} ${pName} ${pMobile} ${pRef} ${pAddress}`.toLowerCase();
+      return tokens.every((token) => combined.includes(token));
+    });
+  }, [patients, query]);
+
+  const totalItems = filteredPatients.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const endIndex = Math.min(startIndex + PAGE_SIZE, totalItems);
+  const visiblePatients = filteredPatients.slice(startIndex, endIndex);
+
+  return (
+    <>
+      <div className="table-scroll">
+        <table className="app-table patient-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Patient</th>
+              <th>Age / gender</th>
+              <th>Mobile</th>
+              <th>Referred by</th>
+              <th>Selected tests</th>
+              {(onOpen || onNewReport) && <th>Actions</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {visiblePatients.length ? (
+              visiblePatients.map((patient) => {
+                const patientReports = reports.filter((report) => report.patientId === patient.id);
+                const latestReport = patientReports[0];
+                return (
+                  <tr key={patient.id}>
+                    <td><b>{patient.id}</b></td>
+                    <td>{patientName(patient)}</td>
+                    <td>{patient.age} {patient.ageUnit || 'Years'} / {patient.gender}</td>
+                    <td>{patient.mobile || '—'}</td>
+                    <td>{patient.reference || (typeof patient.doctorId === 'object' ? patient.doctorId?.name : '') || 'Self'}</td>
+                    <td>
+                      {latestReport?.tests?.length ? (
+                        `${latestReport.tests.length} test${latestReport.tests.length === 1 ? '' : 's'} selected`
+                      ) : (
+                        'No tests selected'
+                      )}
+                    </td>
+                    {(onOpen || onNewReport) && (
+                      <td className="patient-actions">
+                        {onOpen && (
+                          <button
+                            type="button"
+                            className="secondary small"
+                            onClick={() => onOpen(patient)}
+                          >
+                            Open record
+                          </button>
+                        )}
+                        {onNewReport && (
+                          <button
+                            type="button"
+                            className="small"
+                            onClick={() => onNewReport(patient)}
+                          >
+                            Test booking
+                          </button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={onOpen || onNewReport ? 7 : 6} className="empty" style={{ padding: '28px', textAlign: 'center' }}>
+                  {query ? (
+                    <div>
+                      <p style={{ margin: '0 0 10px', color: '#64748b', fontSize: '13.5px' }}>
+                        No patients matching <b>"{search}"</b>
+                      </p>
+                      {onClearSearch && (
+                        <button
+                          type="button"
+                          className="secondary small"
+                          onClick={onClearSearch}
+                        >
+                          Clear search
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    'No patients registered yet.'
+                  )}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {totalItems > 0 && (
+        <div className="table-pagination-bar">
+          <div className="table-pagination-info">
+            <span>
+              Showing <b>{startIndex + 1}–{endIndex}</b> of <b>{totalItems}</b> patients
+              {query && ` (filtered from ${patients.length} total)`}
+            </span>
+          </div>
+
+          <div className="table-pagination-controls">
+            <button
+              type="button"
+              className="table-page-btn"
+              disabled={currentPage <= 1}
+              onClick={() => setPage(1)}
+              title="First page"
+            >
+              «
+            </button>
+            <button
+              type="button"
+              className="table-page-btn"
+              disabled={currentPage <= 1}
+              onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+              title="Previous page"
+            >
+              ‹ Prev
+            </button>
+
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => {
+              if (totalPages > 7) {
+                if (p !== 1 && p !== totalPages && Math.abs(p - currentPage) > 2) {
+                  if (p === 2 || p === totalPages - 1) {
+                    return <span key={p} style={{ padding: '0 4px', color: '#94a3b8' }}>…</span>;
+                  }
+                  return null;
+                }
+              }
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  className={`table-page-btn ${p === currentPage ? 'active' : ''}`}
+                  onClick={() => setPage(p)}
+                >
+                  {p}
+                </button>
+              );
+            })}
+
+            <button
+              type="button"
+              className="table-page-btn"
+              disabled={currentPage >= totalPages}
+              onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+              title="Next page"
+            >
+              Next ›
+            </button>
+            <button
+              type="button"
+              className="table-page-btn"
+              disabled={currentPage >= totalPages}
+              onClick={() => setPage(totalPages)}
+              title="Last page"
+            >
+              »
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
 
 function CatalogueRow({ test, onSave, onRemove }) {
