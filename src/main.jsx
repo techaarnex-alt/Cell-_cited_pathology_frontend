@@ -2393,119 +2393,75 @@ function App() {
       </>}
       {view === 'patients' && <><header className="page-head"><div><span className="eyebrow">PATIENTS</span>  </div><button onClick={() => registrationRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}>+ Register patient</button></header><section className="panel patient-register"><header><div><h2>Registered patients</h2><p>Find a patient by name, patient ID or mobile number.</p></div></header><label className="patient-search">Search by patient ID or name<input value={patientSearch} onChange={(event) => setPatientSearch(event.target.value)} placeholder="Search by patient name, ID or mobile number" /></label><PatientList patients={data.patients} reports={data.reports} search={patientSearch} onOpen={(patient) => { setPatientRecordId(patient.id); setView('patientrecord'); }} onNewReport={(patient) => { setNewReportPatientId(patient.id); setView('newreport'); }} /></section><form ref={registrationRef} className="panel patient-form patient-visit-form" onSubmit={registerPatient}><h2>Patient registration</h2><div className="form-grid patient-details-grid"><label>Title<select name="title" defaultValue="" onChange={(event) => setRegistrationGender(genderForTitle(event.target.value))}><option value="">Select title</option><option>Mr.</option><option>Mrs.</option><option>Ms.</option><option>Master</option><option>Baby</option><option>Dr.</option></select></label><label>Patient name<input name="name" required /></label><label>Age<input name="age" type="number" min="0" required /></label><label>Age unit<select name="ageUnit" defaultValue="Years"><option>Years</option><option>Months</option><option>Days</option></select></label><label>Gender<select name="gender" value={registrationGender} onChange={(event) => setRegistrationGender(event.target.value)} required><option value="" disabled>Select gender</option><option>Female</option><option>Male</option><option>Other</option></select></label><label>Mobile<input name="mobile" type="tel" inputMode="numeric" placeholder="10-digit mobile number" /></label><label>Referred by<select name="doctorId" defaultValue=""><option value="">Self / direct walk-in</option>{data.doctors.map((doctor) => <option value={doctor.id} key={doctor.id}>{doctor.doctorCode} · {doctor.name} ({doctor.referralPercentage}%)</option>)}</select></label><label>Sample type<select name="sampleType" defaultValue="Blood">{SAMPLE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}</select></label><label>Collected on<input name="collectedOn" defaultValue={date()} placeholder="DD/MM/YYYY" /></label><label className="wide">Address<input name="address" placeholder="Patient address (optional)" /></label></div><fieldset className="visit-tests"><legend>Select tests for this visit</legend><p className="field-help">Choose one or more tests. A draft report and billing entry will be created from these selections.</p><InvestigationPicker key={bookingPickerKey} catalogue={catalogue} testGroups={testGroups} booking /></fieldset><button>Save patient</button></form></>}
       {view === 'patientrecord' && recordPatient && <><header className="page-head"><div><span className="eyebrow">PATIENT RECORD</span><h1>{patientName(recordPatient)}</h1><p>{recordPatient.id} · {recordPatient.mobile || 'No mobile number recorded'}</p></div><div><button className="secondary" onClick={() => setView('patients')}>Back to patients</button><button onClick={() => { setNewReportPatientId(recordPatient.id); setView('newreport'); }}>+ Test booking</button></div></header><section className="panel patient-record"><div><span>Patient ID</span><b>{recordPatient.id}</b></div><div><span>Age / gender</span><b>{recordPatient.age} {recordPatient.ageUnit || 'Years'} / {recordPatient.gender}</b></div><div><span>Mobile</span><b>{recordPatient.mobile || '—'}</b></div><div><span>Sample type</span><b>{recordPatient.sampleType || 'Blood'}</b></div><div><span>Registered on</span><b>{recordPatient.registeredOn || '—'}</b></div><div><span>Referred by</span><b>{recordPatient.reference || 'Self'}</b></div><div><span>Address</span><b>{recordPatient.address || '—'}</b></div></section><section className="panel"><h2>Report history</h2><ReportList reports={data.reports.filter((report) => report.patientId === recordPatient.id)} patients={data.patients} onOpen={openReport} onResults={(report) => { setSelectedId(report.id); setView('results'); }} /></section></>}
-      {view === 'newreport' && <><header className="page-head"><div><span className="eyebrow">TEST BOOKING</span> </div></header>
-        <form className="panel patient-form" onSubmit={createReport}>
-          <fieldset>
-            <legend>Patient and billing</legend>
-            <div className="form-grid">
-              <label className="wide">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span>Patient</span>
-                  {newReportPatientId && (
-                    <button
-                      type="button"
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        color: '#2563eb',
-                        background: 'none',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        textDecoration: 'underline',
-                      }}
-                      onClick={() => setNewReportPatientId('')}
-                    >
-                      Change / Show all patients
-                    </button>
-                  )}
-                </div>
-                <select
-                  name="patientId"
-                  required
-                  value={newReportPatientId}
-                  onChange={(event) => {
-                    const patId = event.target.value;
-                    setNewReportPatientId(patId);
-                    const pat = data.patients.find((p) => p.id === patId);
-                    if (pat) setNewReportDoctorId(pat.doctorId || '');
-                  }}
-                >
-                  {newReportPatientId && data.patients.find((p) => p.id === newReportPatientId) ? (
-                    (() => {
-                      const p = data.patients.find((item) => item.id === newReportPatientId);
-                      return (
-                        <option value={p.id} key={p.id}>
-                          {p.id} · {patientName(p)}
-                        </option>
-                      );
-                    })()
-                  ) : (
-                    <>
-                      <option value="" disabled>Select patient</option>
-                      {data.patients.map((patient) => (
-                        <option value={patient.id} key={patient.id}>
-                          {patient.id} · {patientName(patient)}
+      {view === 'newreport' && (() => {
+        const selectedBookingPatient = data.patients.find((p) => p.id === newReportPatientId) || (data.patients.length ? data.patients[0] : null);
+        return (
+          <>
+            <header className="page-head"><div><span className="eyebrow">TEST BOOKING</span> </div></header>
+            <form className="panel patient-form" onSubmit={createReport}>
+              <fieldset>
+                <legend>Patient and billing</legend>
+                <div className="form-grid">
+                  <label className="wide">
+                    <span>Patient</span>
+                    <input type="hidden" name="patientId" value={selectedBookingPatient?.id || ''} required />
+                    <div className="test-booking-selected-patient-box">
+                      <div className="test-booking-patient-main">
+                        <span className="test-booking-patient-name">
+                          👤 <b>{selectedBookingPatient ? `${selectedBookingPatient.id} · ${patientName(selectedBookingPatient)}` : 'No patient selected'}</b>
+                        </span>
+                        <button
+                          type="button"
+                          className="secondary small"
+                          onClick={() => setView('patients')}
+                          title="Select a different patient from Registered Patients"
+                        >
+                          ⇄ Change patient from list
+                        </button>
+                      </div>
+                      {selectedBookingPatient && (
+                        <div className="billing-patient-meta" style={{ marginTop: '8px' }}>
+                          <span>Patient ID: <b>{selectedBookingPatient.id}</b></span>
+                          <span>Name: <b>{patientName(selectedBookingPatient)}</b></span>
+                          <span>Age / Gender: <b>{selectedBookingPatient.age} {selectedBookingPatient.ageUnit || 'Years'} / {selectedBookingPatient.gender}</b></span>
+                          <span>Mobile: <b>{selectedBookingPatient.mobile || '—'}</b></span>
+                          <span>Referred by: <b>{selectedBookingPatient.reference || 'Self'}</b></span>
+                        </div>
+                      )}
+                    </div>
+                  </label>
+                  <label>Referred by
+                    <select name="doctorId" value={newReportDoctorId || selectedBookingPatient?.doctorId || ''} onChange={(event) => setNewReportDoctorId(event.target.value)}>
+                      <option value="">Self / direct walk-in</option>
+                      {data.doctors.map((doctor) => (
+                        <option value={doctor.id} key={doctor.id}>
+                          {doctor.doctorCode} · {doctor.name} ({doctor.referralPercentage}%)
                         </option>
                       ))}
-                    </>
-                  )}
-                </select>
-                {newReportPatientId && (() => {
-                  const pat = data.patients.find((p) => p.id === newReportPatientId);
-                  if (!pat) return null;
-                  return (
-                    <div className="billing-patient-meta" style={{ marginTop: '8px' }}>
-                      <span>Patient ID: <b>{pat.id}</b></span>
-                      <span>Name: <b>{patientName(pat)}</b></span>
-                      <span>Age / Gender: <b>{pat.age} {pat.ageUnit || 'Years'} / {pat.gender}</b></span>
-                      <span>Mobile: <b>{pat.mobile || '—'}</b></span>
-                      <span>Referred by: <b>{pat.reference || 'Self'}</b></span>
-                    </div>
-                  );
-                })()}
-              </label>
-              <label>Referred by
-                <select name="doctorId" value={newReportDoctorId} onChange={(event) => setNewReportDoctorId(event.target.value)}>
-                  <option value="">Self / direct walk-in</option>
-                  {data.doctors.map((doctor) => (
-                    <option value={doctor.id} key={doctor.id}>
-                      {doctor.doctorCode} · {doctor.name} ({doctor.referralPercentage}%)
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>Sample type
-                <select name="sampleType" defaultValue={data.patients.find((p) => p.id === newReportPatientId)?.sampleType || 'Blood'} key={newReportPatientId}>
-                  {SAMPLE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
-                </select>
-              </label>
-              <label>Collected on
-                <input name="collectedOn" defaultValue={date()} placeholder="DD/MM/YYYY" />
-              </label>
-              {/*  <label>
-  Fee (₹)
-  <input
-    name="fee"
-    type="number"
-    min="0"
-    value={bookingFee}
-    onChange={(event) => setBookingFee(event.target.value)}
-  />
-</label> */}
-
-            </div>
-          </fieldset>
-          <InvestigationPicker
-            key={`booking-picker-${newReportPatientId}-${testGroups.length}-${catalogue.length}`}
-            catalogue={catalogue}
-            testGroups={testGroups}
-            booking
-            onSelectionChange={(total) => setBookingFee(total)}
-          />
-          <button>Create draft report</button>
-        </form>
-      </>}
+                    </select>
+                  </label>
+                  <label>Sample type
+                    <select name="sampleType" defaultValue={selectedBookingPatient?.sampleType || 'Blood'} key={selectedBookingPatient?.id}>
+                      {SAMPLE_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
+                    </select>
+                  </label>
+                  <label>Collected on
+                    <input name="collectedOn" defaultValue={date()} placeholder="DD/MM/YYYY" />
+                  </label>
+                </div>
+              </fieldset>
+              <InvestigationPicker
+                key={`booking-picker-${selectedBookingPatient?.id || 'none'}-${testGroups.length}-${catalogue.length}`}
+                catalogue={catalogue}
+                testGroups={testGroups}
+                booking
+                onSelectionChange={(total) => setBookingFee(total)}
+              />
+              <button>Create draft report</button>
+            </form>
+          </>
+        );
+      })()}
       {view === 'tests' && <><header className="page-head"><div><span className="eyebrow">LABORATORY CONFIGURATION</span><h1>Available Tests &amp; Prices</h1> </div><button className="secondary" onClick={printCatalogue}>Print test availability / Save PDF</button></header><form className="panel catalogue-form" onSubmit={addTest}><h2>Add laboratory test</h2><div className="form-grid catalogue-add-grid"><label>Test name<input name="name" required /></label><label>Category<input name="category" placeholder="e.g. Biochemistry" /></label><label>Unit<input name="unit" placeholder="e.g. mg/dL" /></label><label>Reference range<input name="range" placeholder="e.g. 70–100" required /></label><label>Rate (₹)<input name="rate" type="number" min="0" step="0.01" defaultValue="0" /></label></div><button>Add test</button></form><section className="panel catalogue-panel"><Catalogue tests={catalogue} onSave={saveTest} onRemove={removeTest} /></section></>}
       {view === 'results' && <><header className="page-head"><div><span className="eyebrow">RESULT  ENTRY</span> </div></header>{data.reports.filter((report) => report.status === 'Draft').length ? data.reports.filter((report) => report.status === 'Draft').map((report) => <ResultForm key={report.id} report={report} patient={data.patients.find((patient) => patient.id === report.patientId)} onFinalise={finalise} />) : <section className="panel empty">No draft reports waiting for results.</section>}</>}
       {view === 'reports' && <><header className="page-head"><div><span className="eyebrow">REPORTS</span> </div></header><section className="panel"><ReportList reports={finalReports} patients={data.patients} onOpen={openReport} /></section></>}
