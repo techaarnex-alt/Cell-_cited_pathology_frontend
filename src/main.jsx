@@ -2174,7 +2174,7 @@ function App() {
     <main className="workspace">
       <header className="app-topbar">
         <div>
-          <span className="topbar-kicker">Welcome To Cell Cited Pathology Lab</span>
+          <span className="topbar-kicker">WELCOME TO CELL CITED PATHOLOGY LAB</span>
         </div>
         <div className="topbar-actions">
           <span className="secure-badge">● Secure local workspace</span>

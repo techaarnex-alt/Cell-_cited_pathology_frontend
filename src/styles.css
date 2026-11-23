@@ -1408,7 +1408,7 @@ nav button:hover {
 .app-topbar {
   max-width: 1180px;
   min-height: 56px;
-  margin: 0 auto 22px;
+  margin: 26px auto 22px;
   padding: 10px 20px;
   display: flex;
   justify-content: space-between;
@@ -1819,7 +1819,7 @@ nav button:hover {
 .app-topbar {
   max-width: 1180px;
   min-height: 56px;
-  margin: 0 auto 22px;
+  margin: 26px auto 22px;
   padding: 10px 20px;
   display: flex;
   justify-content: space-between;
