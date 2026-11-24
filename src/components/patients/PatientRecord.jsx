@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { patientName } from '../../utils/helpers';
+import { LuSquarePen } from 'react-icons/lu';
 import ReportList from '../reports/ReportList';
+import EditPatientModal from './EditPatientModal';
+import EditReportModal from '../reports/EditReportModal';
 import './PatientRecord.css';
 
 export default function PatientRecord() {
@@ -13,6 +16,9 @@ export default function PatientRecord() {
     openReport,
     setSelectedId,
   } = useApp();
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editingReport, setEditingReport] = useState(null);
 
   if (!recordPatient) return null;
 
@@ -27,9 +33,18 @@ export default function PatientRecord() {
             {recordPatient.mobile || 'No mobile number recorded'}
           </p>
         </div>
-        <div>
+        <div className="patient-record-actions">
           <button className="secondary" onClick={() => setView('patients')}>
             Back to patients
+          </button>
+          <button
+            type="button"
+            className="edit-patient-circle-btn"
+            onClick={() => setIsEditOpen(true)}
+            title="Edit patient details"
+            aria-label="Edit patient details"
+          >
+            <LuSquarePen size={20} />
           </button>
           <button
             onClick={() => {
@@ -84,12 +99,30 @@ export default function PatientRecord() {
           )}
           patients={data.patients}
           onOpen={openReport}
+          onEdit={(report) => setEditingReport(report)}
           onResults={(report) => {
             setSelectedId(report.id);
             setView('results');
           }}
         />
       </section>
+
+      {isEditOpen && (
+        <EditPatientModal
+          patient={recordPatient}
+          isOpen={isEditOpen}
+          onClose={() => setIsEditOpen(false)}
+        />
+      )}
+
+      {editingReport && (
+        <EditReportModal
+          report={editingReport}
+          patient={recordPatient}
+          isOpen={Boolean(editingReport)}
+          onClose={() => setEditingReport(null)}
+        />
+      )}
     </>
   );
 }

@@ -3,6 +3,14 @@
   margin: 0 auto;
 }
 
+.report-actions-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
 .preview-head {
   display: flex;
   justify-content: space-between;

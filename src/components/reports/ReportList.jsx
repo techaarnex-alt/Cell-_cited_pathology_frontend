@@ -1,7 +1,25 @@
 import React from 'react';
 import { patientName } from '../../utils/helpers';
+import { LuSquarePen } from 'react-icons/lu';
 
-export default function ReportList({ reports, patients, onOpen, onResults }) {
+function formatInvestigations(tests = []) {
+  const names = (tests || [])
+    .map((test) => (typeof test === 'object' ? test.name : test))
+    .filter(Boolean);
+  if (names.length <= 2) {
+    return names.join(', ');
+  }
+  return `${names.slice(0, 2).join(', ')}, .....`;
+}
+
+function allInvestigations(tests = []) {
+  return (tests || [])
+    .map((test) => (typeof test === 'object' ? test.name : test))
+    .filter(Boolean)
+    .join(', ');
+}
+
+export default function ReportList({ reports, patients, onOpen, onResults, onEdit }) {
   return (
     <div className="table-scroll">
       <table className="app-table">
@@ -12,7 +30,7 @@ export default function ReportList({ reports, patients, onOpen, onResults }) {
             <th>Investigations</th>
             <th>Created</th>
             <th>Status</th>
-            <th />
+            <th style={{ textAlign: 'center' }}>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -33,7 +51,14 @@ export default function ReportList({ reports, patients, onOpen, onResults }) {
                         Groups: {report.testGroups.join(' · ')}
                       </small>
                     ) : null}
-                    {report.tests.map((test) => test.name).join(', ')}
+                    <span
+                      title={allInvestigations(report.tests)}
+                      style={{
+                        cursor: (report.tests?.length || 0) > 2 ? 'help' : 'inherit',
+                      }}
+                    >
+                      {formatInvestigations(report.tests)}
+                    </span>
                   </td>
                   <td>{report.createdOn}</td>
                   <td>
@@ -41,20 +66,36 @@ export default function ReportList({ reports, patients, onOpen, onResults }) {
                       {report.status}
                     </span>
                   </td>
-                  <td>
+                  <td className="report-actions-cell">
                     {report.status === 'Final' ? (
                       <button
+                        type="button"
                         className="secondary small"
                         onClick={() => onOpen(report)}
+                        title="Preview report"
                       >
                         Preview
                       </button>
                     ) : (
                       <button
+                        type="button"
                         className="secondary small"
                         onClick={() => onResults?.(report)}
+                        title="Enter results"
                       >
                         Enter results
+                      </button>
+                    )}
+                    {onEdit && (
+                      <button
+                        type="button"
+                        className="secondary small report-edit-btn"
+                        onClick={() => onEdit(report)}
+                        title="Edit report details & observed results"
+                        style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                      >
+                        <LuSquarePen size={13} />
+                        Edit
                       </button>
                     )}
                   </td>

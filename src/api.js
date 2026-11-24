@@ -101,8 +101,15 @@ export const api = {
     return handleResponse(res);
   },
 
+  async getPatient(id) {
+    const res = await fetch(`${API_BASE}/patients/${encodeURIComponent(id)}`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
   async updatePatient(id, payload) {
-    const res = await fetch(`${API_BASE}/patients/${id}`, {
+    const res = await fetch(`${API_BASE}/patients/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
@@ -194,6 +201,15 @@ export const api = {
   async createReport(payload) {
     const res = await fetch(`${API_BASE}/reports`, {
       method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(res);
+  },
+
+  async updateReport(id, payload) {
+    const res = await fetch(`${API_BASE}/reports/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });

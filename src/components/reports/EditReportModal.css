@@ -1,0 +1,62 @@
+.edit-report-modal {
+  max-width: 860px;
+}
+
+.edit-report-form {
+  padding: 22px 28px 24px;
+}
+
+.edit-report-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+@media screen and (max-width: 680px) {
+  .edit-report-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.edit-report-items-section {
+  border: 1px solid #dce4f3;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 22px;
+  background: #fbfcfe;
+}
+
+.edit-report-items-section legend {
+  font-weight: 750;
+  color: #1e3a8a;
+  padding: 0 8px;
+  font-size: 13.5px;
+}
+
+.edit-report-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.edit-report-table th {
+  padding: 9px 10px;
+  font-size: 11px;
+}
+
+.edit-report-table td {
+  padding: 8px 10px;
+  vertical-align: middle;
+}
+
+.edit-report-table input {
+  padding: 7px 10px;
+  font-size: 13px;
+  height: 36px;
+  width: 100%;
+}
+
+.edit-report-table .report-val-input {
+  font-weight: 700;
+  border-color: #2575ba;
+}

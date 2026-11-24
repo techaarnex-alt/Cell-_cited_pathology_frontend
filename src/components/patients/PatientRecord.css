@@ -16,7 +16,7 @@
   }
 }
 
-.patient-record > div {
+.patient-record>div {
   display: grid;
   gap: 5px;
   padding: 14px;
@@ -37,4 +37,38 @@
   color: #263f85;
   font-size: 14px;
   overflow-wrap: anywhere;
+}
+
+.patient-record-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.edit-patient-circle-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1d2c62;
+  color: #ffffff;
+  border: none;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(37, 117, 186, 0.28);
+  transition: all 0.18s ease;
+  flex-shrink: 0;
+}
+
+.edit-patient-circle-btn:hover {
+  background: #1c64a3;
+  transform: translateY(-1px) scale(1.05);
+  box-shadow: 0 6px 16px rgba(37, 117, 186, 0.38);
+}
+
+.edit-patient-circle-btn:active {
+  transform: translateY(0) scale(0.98);
 }

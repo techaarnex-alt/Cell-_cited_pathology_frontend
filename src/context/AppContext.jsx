@@ -345,6 +345,7 @@ export function AppProvider({ children }) {
             doctorId: p.doctorId?._id || p.doctorId || '',
             reference: p.doctorNameSnapshot || p.doctorId?.name || 'Self',
             address: p.address || '',
+            sampleType: p.sampleType || 'Blood',
             registeredOn:
               p.registeredOn ||
               (p.createdAt
@@ -771,6 +772,166 @@ export function AppProvider({ children }) {
         type: 'success',
       });
     }
+  };
+
+  const updatePatient = async (patientId, payload) => {
+    const existing = data.patients.find(
+      (p) => p.id === patientId || p.backendId === patientId
+    );
+    const identifier = existing?.backendId || patientId;
+
+    let backendResult = null;
+    let apiMsg = '';
+    let apiErr = '';
+
+    try {
+      backendResult = await api.updatePatient(identifier, payload);
+      if (backendResult) {
+        apiMsg = backendResult._apiMessage || 'Patient updated successfully';
+      }
+    } catch (err) {
+      console.warn('Backend updatePatient fallback:', err);
+      apiErr = err.message || 'Server connection error';
+    }
+
+    const referringDoctor = data.doctors.find(
+      (doc) => doc.id === payload.doctorId || doc.backendId === payload.doctorId
+    );
+
+    const updatedPatient = {
+      ...existing,
+      ...payload,
+      id: existing?.id || patientId,
+      backendId: existing?.backendId || (backendResult?._id ? backendResult._id : undefined),
+      title: payload.title !== undefined ? payload.title : existing?.title || '',
+      name: payload.name !== undefined ? payload.name.trim() : existing?.name || '',
+      age: payload.age !== undefined ? Number(payload.age) : existing?.age,
+      ageUnit: payload.ageUnit || existing?.ageUnit || 'Years',
+      gender: payload.gender || existing?.gender || '',
+      mobile: payload.mobile !== undefined ? payload.mobile.trim() : existing?.mobile || '',
+      address: payload.address !== undefined ? payload.address.trim() : existing?.address || '',
+      sampleType: payload.sampleType !== undefined ? payload.sampleType : existing?.sampleType || 'Blood',
+      registeredOn: payload.registeredOn !== undefined ? payload.registeredOn : existing?.registeredOn || '',
+      doctorId: referringDoctor?.id || payload.doctorId || '',
+      reference: referringDoctor?.name || (payload.doctorId ? 'Self' : existing?.reference || 'Self'),
+    };
+
+    save((current) => ({
+      ...current,
+      patients: current.patients.map((p) =>
+        p.id === updatedPatient.id || (updatedPatient.backendId && p.backendId === updatedPatient.backendId)
+          ? updatedPatient
+          : p
+      ),
+      reports: current.reports.map((r) =>
+        r.patientId === updatedPatient.id
+          ? {
+              ...r,
+              sampleType: updatedPatient.sampleType || r.sampleType,
+            }
+          : r
+      ),
+    }));
+
+    if (backendResult) {
+      setNotice({
+        message: apiMsg || 'Patient details updated successfully',
+        type: 'success',
+      });
+    } else if (apiErr) {
+      setNotice({
+        message: `Saved locally: ${apiErr}`,
+        type: 'warning',
+      });
+    } else {
+      setNotice({
+        message: 'Patient details updated successfully',
+        type: 'success',
+      });
+    }
+
+    return updatedPatient;
+  };
+
+  const updateReport = async (reportId, payload) => {
+    const existing = data.reports.find(
+      (r) => r.id === reportId || r.backendId === reportId || r.number === reportId
+    );
+    const identifier = existing?.backendId || existing?.id || reportId;
+
+    let backendResult = null;
+    let apiMsg = '';
+    let apiErr = '';
+
+    try {
+      backendResult = await api.updateReport(identifier, payload);
+      if (backendResult) {
+        apiMsg = backendResult._apiMessage || 'Report updated successfully';
+      }
+    } catch (err) {
+      console.warn('Backend updateReport fallback:', err);
+      apiErr = err.message || 'Server connection error';
+    }
+
+    const updatedReport = {
+      ...existing,
+      ...payload,
+      id: existing?.id || reportId,
+      backendId: existing?.backendId || backendResult?._id,
+      number: existing?.number || reportId,
+      status: payload.status || existing?.status || 'Final',
+      sampleType: payload.sampleType || existing?.sampleType || 'Blood',
+      reportedOn: payload.reportedOn !== undefined ? payload.reportedOn : existing?.reportedOn,
+      fee: payload.fee !== undefined ? Number(payload.fee) : existing?.fee,
+      discount: payload.discount !== undefined ? Number(payload.discount) : existing?.discount,
+      paid: payload.paid !== undefined ? Number(payload.paid) : existing?.paid,
+      tests: (existing?.tests || []).map((t) => {
+        const itemInput = (payload.items || payload.tests || []).find(
+          (item) =>
+            item.name?.toLowerCase() === t.name?.toLowerCase() ||
+            item.testName?.toLowerCase() === t.name?.toLowerCase() ||
+            (item.reportItemId && item.reportItemId === t.reportItemId)
+        );
+        if (itemInput) {
+          return {
+            ...t,
+            value: itemInput.value !== undefined ? itemInput.value : t.value,
+            unit: itemInput.unit !== undefined ? itemInput.unit : t.unit,
+            range: itemInput.range || itemInput.referenceRange || t.range,
+            remark: itemInput.remark !== undefined ? itemInput.remark : t.remark,
+          };
+        }
+        return t;
+      }),
+    };
+
+    save((current) => ({
+      ...current,
+      reports: current.reports.map((r) =>
+        r.id === updatedReport.id || r.backendId === updatedReport.backendId || r.number === updatedReport.number
+          ? updatedReport
+          : r
+      ),
+    }));
+
+    if (backendResult) {
+      setNotice({
+        message: apiMsg || 'Report updated successfully',
+        type: 'success',
+      });
+    } else if (apiErr) {
+      setNotice({
+        message: `Saved locally: ${apiErr}`,
+        type: 'warning',
+      });
+    } else {
+      setNotice({
+        message: 'Report updated successfully',
+        type: 'success',
+      });
+    }
+
+    return updatedReport;
   };
 
   const finalise = async (report, event) => {
@@ -1664,6 +1825,8 @@ export function AppProvider({ children }) {
     loadTestBookingData,
     chosenInvestigations,
     registerPatient,
+    updatePatient,
+    updateReport,
     finalise,
     openReport,
     openInvoice,

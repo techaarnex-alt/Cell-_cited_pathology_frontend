@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { patientName } from '../../utils/helpers';
+import { LuSquarePen } from 'react-icons/lu';
 
 export default function PatientList({
   patients,
   reports,
   search = '',
   onOpen,
+  onEdit,
   onNewReport,
   onClearSearch,
 }) {
@@ -57,7 +59,7 @@ export default function PatientList({
               <th>Mobile</th>
               <th>Referred by</th>
               <th>Selected tests</th>
-              {(onOpen || onNewReport) && <th>Actions</th>}
+              {(onOpen || onEdit || onNewReport) && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -91,7 +93,7 @@ export default function PatientList({
                         } selected`
                         : 'No tests selected'}
                     </td>
-                    {(onOpen || onNewReport) && (
+                    {(onOpen || onEdit || onNewReport) && (
                       <td className="patient-actions">
                         {onOpen && (
                           <button
@@ -100,6 +102,18 @@ export default function PatientList({
                             onClick={() => onOpen(patient)}
                           >
                             Open record
+                          </button>
+                        )}
+                        {onEdit && (
+                          <button
+                            type="button"
+                            className="secondary small"
+                            onClick={() => onEdit(patient)}
+                            title="Edit patient details"
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                          >
+                            <LuSquarePen size={13} />
+                            Edit
                           </button>
                         )}
                         {onNewReport && (
@@ -119,7 +133,7 @@ export default function PatientList({
             ) : (
               <tr>
                 <td
-                  colSpan={onOpen || onNewReport ? 8 : 7}
+                  colSpan={onOpen || onEdit || onNewReport ? 8 : 7}
                   className="empty"
                   style={{ padding: '28px', textAlign: 'center' }}
                 >

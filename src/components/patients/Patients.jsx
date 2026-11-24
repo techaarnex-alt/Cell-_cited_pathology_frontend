@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { SAMPLE_TYPES } from '../../constants';
 import { date, genderForTitle } from '../../utils/helpers';
 import PatientList from './PatientList';
+import EditPatientModal from './EditPatientModal';
 import InvestigationPicker from '../booking/InvestigationPicker';
 import './Patients.css';
 
@@ -22,6 +23,8 @@ export default function Patients() {
     catalogue,
     testGroups,
   } = useApp();
+
+  const [editingPatient, setEditingPatient] = useState(null);
 
   return (
     <>
@@ -86,6 +89,7 @@ export default function Patients() {
             setPatientRecordId(patient.id);
             setView('patientrecord');
           }}
+          onEdit={(patient) => setEditingPatient(patient)}
           onNewReport={(patient) => {
             setNewReportPatientId(patient.id);
             setView('newreport');
@@ -93,6 +97,14 @@ export default function Patients() {
           onClearSearch={() => setPatientSearch('')}
         />
       </section>
+
+      {editingPatient && (
+        <EditPatientModal
+          patient={editingPatient}
+          isOpen={Boolean(editingPatient)}
+          onClose={() => setEditingPatient(null)}
+        />
+      )}
 
       <form
         ref={registrationRef}
