@@ -16,7 +16,7 @@ export default function InvoicePreview() {
   }
 
   return (
-    <>
+    <div className="page-container preview-container">
       <header className="page-head preview-head">
         <div>
           <span className="eyebrow">INVOICE</span>
@@ -41,6 +41,6 @@ export default function InvoicePreview() {
         patient={invoicePatient}
         labProfile={labProfile}
       />
-    </>
+    </div>
   );
 }

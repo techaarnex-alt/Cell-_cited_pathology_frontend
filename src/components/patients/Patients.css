@@ -1,3 +1,10 @@
+.patients-container {
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 .patient-register>header {
   margin-bottom: 14px;
 }
@@ -191,4 +198,410 @@
   align-items: center;
   justify-content: center;
   white-space: nowrap;
+}
+
+/* Field label ensuring text and asterisk stay inline on one single row */
+.field-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+/* Asterisk for required form fields (inherits label text color) */
+.required-star,
+.patient-details-grid label .required-star,
+label .required-star {
+  color: inherit !important;
+  font-weight: 700 !important;
+  margin-left: 2px !important;
+  font-size: 13px !important;
+  display: inline !important;
+  vertical-align: baseline !important;
+}
+
+/* Form validation errors from react-hook-form & yup */
+.form-field-error {
+  display: block;
+  color: #dc2626;
+  font-size: 11.5px;
+  font-weight: 600;
+  margin-top: 4px;
+  line-height: 1.25;
+}
+
+.input-error {
+  border-color: #dc2626 !important;
+  background-color: #fff8f8 !important;
+}
+
+.input-error:focus {
+  outline: 2px solid rgba(220, 38, 38, 0.2) !important;
+  border-color: #dc2626 !important;
+}
+
+/* Step indicator / title bar in Patient details form */
+.patient-form-title-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.step-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  border: 1.5px solid #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 750;
+  color: #334155;
+  background: #f8fafc;
+  line-height: 1;
+}
+
+.patient-form-title-bar h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 750;
+  color: #0f172a;
+}
+
+/* Mobile field with prefix and search dropdown */
+.mobile-field-label {
+  position: relative;
+}
+
+.mobile-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+  height: 42px;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mobile-input-wrapper.is-focused,
+.mobile-input-wrapper:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.mobile-input-wrapper.input-error {
+  border-color: #dc2626 !important;
+  background-color: #fff8f8;
+}
+
+.mobile-prefix {
+  padding: 0 10px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f8fafc;
+  border-right: 1px solid #cbd5e1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.mobile-input-field {
+  flex: 1;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 8px 10px !important;
+  font-size: 13.5px !important;
+  height: 100% !important;
+  width: 100% !important;
+  background: transparent !important;
+  color: #0f172a;
+  box-sizing: border-box;
+}
+
+.mobile-input-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 10px;
+  flex-shrink: 0;
+}
+
+.mobile-valid-check {
+  color: #16a34a;
+  font-size: 15px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-search-icon {
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Dropdown list for matching existing patients */
+.mobile-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  min-width: 320px;
+  max-width: 440px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.16), 0 4px 12px -2px rgba(15, 23, 42, 0.08);
+  z-index: 9999;
+  max-height: 250px;
+  overflow-y: auto;
+  animation: fadeIn 0.12s ease-out;
+}
+
+.mobile-dropdown-item {
+  padding: 10px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+  text-align: left;
+}
+
+.mobile-dropdown-item:last-of-type {
+  border-bottom: none;
+}
+
+.mobile-dropdown-item:hover {
+  background-color: #eff6ff;
+}
+
+.mobile-dropdown-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.3;
+}
+
+.mobile-dropdown-meta {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mobile-dropdown-pid {
+  color: #2563eb;
+  font-weight: 600;
+  font-size: 11.5px;
+}
+
+.mobile-dropdown-phone {
+  color: #64748b;
+  font-size: 11.5px;
+}
+
+.mobile-dropdown-footer {
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: #64748b;
+  background: #f8fafc;
+  border-top: 1px solid #edf2f7;
+  font-style: italic;
+}
+
+.mobile-dropdown-empty {
+  padding: 12px 14px;
+  font-size: 12px;
+  color: #64748b;
+  line-height: 1.4;
+  background: #f8fafc;
+}
+
+/* =========================================================
+   DYNAMIC OPTIONAL PATIENT FIELDS (Email, Address, Aadhaar, History)
+   LabSmart-style Dashed Pills & Expandable Cards
+   ========================================================= */
+
+.patient-optional-section {
+  margin-top: 16px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Online Report Requested Checkbox */
+.patient-online-report-row {
+  display: flex;
+  align-items: center;
+  padding: 2px 0;
+}
+
+.online-report-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+  cursor: pointer;
+  user-select: none;
+}
+
+.online-report-checkbox {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 1.5px solid #94a3b8;
+  accent-color: #2563eb;
+  cursor: pointer;
+}
+
+/* Row of Dashed Round Pills: + Email, + Address, + Aadhaar, + Patient history */
+.optional-pills-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+}
+
+.optional-add-pill-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  padding: 6px 14px !important;
+  background: #ffffff !important;
+  border: 1px dashed #cbd5e1 !important;
+  border-radius: 9999px !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: #1e293b !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.optional-add-pill-btn:hover {
+  background: #f8fafc !important;
+  border-color: #2563eb !important;
+  color: #2563eb !important;
+}
+
+.pill-plus-icon {
+  width: 15px;
+  height: 15px;
+  color: #64748b;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+}
+
+.optional-add-pill-btn:hover .pill-plus-icon {
+  color: #2563eb;
+}
+
+/* Active Expanded Optional Field Cards */
+.active-optional-fields-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.optional-field-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.optional-field-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  width: 100%;
+}
+
+.optional-field-title-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.optional-field-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.optional-badge {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border-radius: 6px;
+  letter-spacing: 0.01em;
+}
+
+.remove-optional-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #475569 !important;
+  cursor: pointer !important;
+  transition: color 0.15s ease !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.remove-optional-btn:hover {
+  color: #ef4444 !important;
+}
+
+.optional-input-field,
+.optional-textarea-field {
+  width: 100% !important;
+  border: 1px solid #cbd5e1 !important;
+  border-radius: 8px !important;
+  padding: 9px 12px !important;
+  font-size: 13.5px !important;
+  color: #0f172a !important;
+  background: #ffffff !important;
+  box-sizing: border-box !important;
+  font-family: inherit !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.optional-input-field:focus,
+.optional-textarea-field:focus {
+  border-color: #2563eb !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
+}
+
+.optional-textarea-field {
+  resize: vertical !important;
+  min-height: 64px !important;
+  line-height: 1.5 !important;
 }

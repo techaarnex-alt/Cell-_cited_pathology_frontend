@@ -1,75 +1,249 @@
-.app-topbar {
-  max-width: 1180px;
-  min-height: auto;
-  margin: 26px auto 14px;
-  padding: 0;
+/* =========================================================
+   TOP NAVBAR - FULL-WIDTH CLEAN WHITE ENTERPRISE HEADER
+   ========================================================= */
+
+header.app-topbar {
+  width: 100% !important;
+  max-width: none !important;
+  height: 56px !important;
+  min-height: 56px !important;
+  margin: 0 !important;
+  padding: 0 24px !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 30 !important;
+  box-sizing: border-box !important;
+}
+
+.topbar-left {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+.topbar-toggle-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+}
+
+.topbar-toggle-btn:hover {
+  background: #eff6ff !important;
+  color: #2563eb !important;
+  border-color: #bfdbfe !important;
+  transform: none !important;
+}
+
+.topbar-breadcrumbs {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 20px;
-  color: #1d2b4f;
-  box-sizing: border-box;
+  gap: 8px;
 }
 
-.app-topbar > div {
-  display: flex;
+.breadcrumb-kicker {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-}
-
-.app-topbar b {
-  font-size: 14px;
-  letter-spacing: 0.01em;
-}
-
-.topbar-kicker {
-  color: #1e3a8a;
-  font-size: 15px;
+  padding: 3px 8px;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  color: #2563eb;
+  font-size: 11px;
   font-weight: 750;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.breadcrumb-kicker:hover {
+  background: #dbeafe;
+}
+
+.breadcrumb-separator {
+  color: #cbd5e1;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+.breadcrumb-current {
+  color: #0f172a;
+  font-size: 14.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 .topbar-actions {
   display: flex !important;
-  grid-template-columns: none !important;
-  align-items: center;
-  margin-top: 0 !important;
-  gap: 12px;
-  color: #64748f;
-  font-size: 13px;
+  align-items: center !important;
+  gap: 12px !important;
+  margin: 0 !important;
 }
 
-.secure-badge {
+.topbar-status-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  border-radius: 99px;
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #047857;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #16a34a;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+.status-dot-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+  animation: pulse-dot 2s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
 }
 
 .topbar-date {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: #ffffff;
-  border: 1px solid #dce4f3;
-  border-radius: 10px;
-  color: #334155;
-  font-size: 15px;
+  gap: 6px;
+  padding: 5px 11px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(30, 58, 138, 0.04);
 }
 
 .topbar-date .calendar-icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
   color: #64748b;
   flex-shrink: 0;
+}
+
+.topbar-lab-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 5px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  color: #334155;
+}
+
+.topbar-lab-badge .lab-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.topbar-lab-badge .lab-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.topbar-lab-badge .lab-name {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.topbar-lab-badge .lab-role {
+  font-size: 9.5px;
+  font-weight: 500;
+  color: #64748b;
+}
+
+/* User Profile Icon Button & Dropdown Styles (Pure White & Black) */
+.topbar-user-avatar-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 50% !important;
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+  cursor: pointer !important;
+  padding: 0 !important;
+  transform: none !important;
+  outline: none !important;
+  transition: all 0.15s ease !important;
+}
+
+.topbar-user-avatar-btn:hover {
+  background: #f8fafc !important;
+  color: #000000 !important;
+  border-color: #94a3b8 !important;
+  transform: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+}
+
+.topbar-user-avatar-btn.is-open {
+  background: #f1f5f9 !important;
+  color: #000000 !important;
+  border-color: #0f172a !important;
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08) !important;
+  transform: none !important;
+}
+
+/* =========================================================
+   PRINT MEDIA - COMPLETELY HIDE TOPBAR
+   ========================================================= */
+@media print {
+  header.app-topbar,
+  .app-topbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    top: -9999px !important;
+  }
 }

@@ -103,7 +103,7 @@ export default function Settings() {
   };
 
   return (
-    <div className="settings-page-wrapper">
+    <div className="settings-page-wrapper page-container">
       <header className="page-head">
         <div>
           <span className="eyebrow">SETTINGS</span>

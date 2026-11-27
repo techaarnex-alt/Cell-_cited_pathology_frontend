@@ -17,7 +17,7 @@ export default function Dashboard() {
   } = useApp();
 
   return (
-    <>
+    <div className="page-container dashboard-container">
       <header className="page-head">
         <div>
           <span className="eyebrow">OPERATIONS / OVERVIEW</span>
@@ -70,6 +70,15 @@ export default function Dashboard() {
           <span className="metric-label">Today's release</span>
           <b className="metric-number">{todayRelease}</b>
           <span className="metric-sub">Final reports released</span>
+        </article>
+        <article
+          onClick={() => setView('reports')}
+          style={{ cursor: 'pointer' }}
+          title="View today's revenue report"
+        >
+          <span className="metric-label">Today's Revenue</span>
+          <b className="metric-number">0</b>
+          <span className="metric-sub">Today Revenue Report</span>
         </article>
       </section>
 
@@ -267,6 +276,6 @@ export default function Dashboard() {
           </div>
         </section>
       </div>
-    </>
+    </div>
   );
 }

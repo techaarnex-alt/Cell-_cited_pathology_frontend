@@ -1,6 +1,8 @@
 .profile-page-wrapper {
-  max-width: 680px;
-  margin: 10px 0 50px;
+  max-width: 1180px;
+  margin: 0 auto 50px;
+  width: 100%;
+  box-sizing: border-box;
   animation: fadeIn 0.25s ease-out;
 }
 

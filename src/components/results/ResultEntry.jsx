@@ -11,7 +11,7 @@ export default function ResultEntry() {
   );
 
   return (
-    <>
+    <div className="page-container result-entry-container">
       <header className="page-head">
         <div>
           <span className="eyebrow">RESULT ENTRY</span>
@@ -34,6 +34,6 @@ export default function ResultEntry() {
           No draft reports waiting for results.
         </section>
       )}
-    </>
+    </div>
   );
 }

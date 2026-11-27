@@ -150,7 +150,7 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
           <div className="form-grid edit-patient-grid">
             {/* Patient ID: Displayed read-only */}
             <label>
-              Patient ID
+              <span className="field-label">Patient ID</span>
               <input
                 type="text"
                 value={patient.id}
@@ -162,11 +162,14 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Title */}
             <label>
-              Title
+              <span className="field-label">
+                Title <span className="required-star" style={{ fontWeight: 'bold', marginLeft: '3px' }}>*</span>
+              </span>
               <select
                 name="title"
                 value={formData.title}
                 onChange={handleChange}
+                required
               >
                 <option value="">Select title</option>
                 <option value="Mr.">Mr.</option>
@@ -180,7 +183,9 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Patient Name */}
             <label>
-              Patient Name *
+              <span className="field-label">
+                Patient Name <span className="required-star" style={{ fontWeight: 'bold', marginLeft: '3px' }}>*</span>
+              </span>
               <input
                 type="text"
                 name="name"
@@ -193,7 +198,9 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Age */}
             <label>
-              Age *
+              <span className="field-label">
+                Age <span className="required-star" style={{ fontWeight: 'bold', marginLeft: '3px' }}>*</span>
+              </span>
               <input
                 type="number"
                 name="age"
@@ -207,7 +214,7 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Age Unit */}
             <label>
-              Age Unit
+              <span className="field-label">Age Unit</span>
               <select
                 name="ageUnit"
                 value={formData.ageUnit}
@@ -221,7 +228,9 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Gender */}
             <label>
-              Gender *
+              <span className="field-label">
+                Gender <span className="required-star" style={{ fontWeight: 'bold', marginLeft: '3px' }}>*</span>
+              </span>
               <select
                 name="gender"
                 value={formData.gender}
@@ -237,19 +246,24 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Mobile */}
             <label>
-              Mobile
+              <span className="field-label">
+                Mobile <span className="required-star" style={{ fontWeight: 'bold', marginLeft: '3px' }}>*</span>
+              </span>
               <input
                 type="tel"
                 name="mobile"
                 value={formData.mobile}
                 onChange={handleChange}
                 placeholder="10-digit mobile number"
+                required
               />
             </label>
 
             {/* Referring Doctor */}
             <label>
-              Referred by
+              <span className="field-label">
+                Referred by <span className="required-star" style={{ fontWeight: 'bold', marginLeft: '3px' }}>*</span>
+              </span>
               <select
                 name="doctorId"
                 value={formData.doctorId}
@@ -270,7 +284,7 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Sample Type */}
             <label>
-              Sample Type
+              <span className="field-label">Sample Type</span>
               <select
                 name="sampleType"
                 value={formData.sampleType}
@@ -286,7 +300,7 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Registered On */}
             <label>
-              Registered On
+              <span className="field-label">Registered On</span>
               <input
                 type="text"
                 name="registeredOn"
@@ -298,7 +312,7 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
 
             {/* Address */}
             <label className="wide">
-              Address
+              <span className="field-label">Address</span>
               <input
                 type="text"
                 name="address"

@@ -1,3 +1,41 @@
+.result-entry-container {
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.result-form.panel {
+  background: #ffffff !important;
+  border: 1px solid #dce4f0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 18px rgba(26, 44, 88, 0.05) !important;
+  padding: 22px 26px !important;
+  margin-bottom: 24px !important;
+}
+
+.result-form header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #edf2f7;
+  margin-bottom: 18px;
+}
+
+.result-form header h2 {
+  font-size: 17px;
+  font-weight: 750;
+  color: #0f172a;
+  margin: 0 0 4px;
+}
+
+.result-form header p {
+  font-size: 12.5px;
+  color: #64748b;
+  margin: 0;
+}
+
 .result-table {
   width: 100%;
 }
@@ -46,4 +84,188 @@
 .result-form footer p {
   font-size: 12px;
   color: #64748b;
+}
+
+/* Reorder & Drag Handle Styles */
+.result-order-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 14px;
+}
+
+.reorder-instructions {
+  font-size: 12px;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.order-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.save-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important;
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: none !important;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.save-order-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.save-order-btn.is-dirty {
+  background: #16a34a !important;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.25);
+}
+
+.reorder-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.reorder-retry-btn {
+  background: #dc2626;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.reorder-success-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+
+.result-table th.th-drag {
+  width: 90px;
+  min-width: 90px;
+  text-align: center;
+}
+
+.drag-cell-content {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.row-drag-handle {
+  cursor: grab;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+
+.row-drag-handle:hover {
+  color: #1e293b;
+  background: #e2e8f0;
+}
+
+.row-drag-handle:active {
+  cursor: grabbing;
+}
+
+.row-order-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #475569;
+  background: #e2e8f0;
+  padding: 1px 5px;
+  border-radius: 4px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.row-arrow-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.row-arrow-btn {
+  background: none;
+  border: none;
+  padding: 1px;
+  color: #64748b;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 2px;
+}
+
+.row-arrow-btn:hover:not(:disabled) {
+  color: #0f172a;
+  background: #cbd5e1;
+}
+
+.row-arrow-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.result-row.is-dragging {
+  opacity: 0.4;
+  background: #eff6ff !important;
+}
+
+.result-row.is-drag-over {
+  border-top: 2px solid #2563eb !important;
+  background: #f8fafc !important;
+}
+
+.result-test-category {
+  display: block;
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 400;
+  margin-top: 2px;
 }

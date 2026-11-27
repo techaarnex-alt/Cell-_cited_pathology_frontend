@@ -6,6 +6,7 @@ import {
   patientName,
   date,
   isOutsideReferenceRange,
+  sortTestsByCatalogueOrder,
 } from '../../utils/helpers';
 import { DoctorSignature, LetterheadLogo } from '../common/Icons';
 import './ReportDocument.css';
@@ -20,24 +21,39 @@ export default function ReportDocument({
 }) {
   if (!report || !patient) return null;
 
-  const rows = report.tests || [];
+  const rawRows = report.tests || [];
   const groupsList =
     Array.isArray(testGroups) && testGroups.length
       ? testGroups
       : FALLBACK_TEST_GROUPS;
+
+  // Preserve custom saved sequence if present; otherwise default to Catalogue order
+  const effectiveRows = report.hasCustomItemOrder
+    ? [...rawRows].sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
+    : report.status !== 'Final'
+    ? sortTestsByCatalogueOrder(rawRows, groupsList)
+    : rawRows;
+
   const PAGE_SIZE = 10;
   const chunks = [];
 
   const getProfileForTest = (test) => {
-    const matchedGroup = groupsList.find((g) =>
-      (g.tests || []).some((tName) => testKey(tName) === testKey(test.name))
-    );
-    if (matchedGroup) {
-      return matchedGroup.name;
-    }
     const cat = String(test.category || '').trim();
     if (cat && cat.toLowerCase() !== 'general') {
       return cat;
+    }
+    const matchedGroup = groupsList.find((g) =>
+      (g.catalogTests || g.tests || []).some((t) => {
+        const tName = typeof t === 'string' ? t : t?.name || t?.investigation || '';
+        if (testKey(tName) === testKey(test.name)) return true;
+        if (t?.parameters && Array.isArray(t.parameters)) {
+          return t.parameters.some((p) => testKey(p.name) === testKey(test.name));
+        }
+        return false;
+      })
+    );
+    if (matchedGroup) {
+      return matchedGroup.name;
     }
     const fallbackCategory = categoryForTest(test.name, groupsList);
     if (fallbackCategory && fallbackCategory.toLowerCase() !== 'general') {
@@ -46,44 +62,29 @@ export default function ReportDocument({
     return 'Clinical Pathology';
   };
 
-  const profileMap = new Map();
-  rows.forEach((test) => {
-    const profileName = getProfileForTest(test);
-    if (!profileMap.has(profileName)) {
-      profileMap.set(profileName, []);
-    }
-    profileMap.get(profileName).push(test);
-  });
-
-  const orderedProfiles = [];
-  (report.testGroups || []).forEach((groupName) => {
-    const g = groupsList.find(
-      (item) => item.name === groupName || item.id === groupName
-    );
-    const resolved = g ? g.name : groupName;
-    if (profileMap.has(resolved) && !orderedProfiles.includes(resolved)) {
-      orderedProfiles.push(resolved);
-    }
-  });
-  groupsList.forEach((g) => {
-    if (profileMap.has(g.name) && !orderedProfiles.includes(g.name)) {
-      orderedProfiles.push(g.name);
-    }
-  });
-  profileMap.forEach((_, name) => {
-    if (!orderedProfiles.includes(name)) {
-      orderedProfiles.push(name);
+  // Group consecutive rows sharing the same department so the saved row sequence is strictly preserved
+  const consecutiveSections = [];
+  effectiveRows.forEach((test) => {
+    const dept = getProfileForTest(test);
+    const lastSection = consecutiveSections[consecutiveSections.length - 1];
+    if (lastSection && lastSection.department === dept) {
+      lastSection.tests.push(test);
+    } else {
+      consecutiveSections.push({
+        department: dept,
+        tests: [test],
+      });
     }
   });
 
-  orderedProfiles.forEach((profileName) => {
-    const tests = profileMap.get(profileName) || [];
+  consecutiveSections.forEach((section) => {
+    const { department, tests } = section;
     if (!tests.length) return;
 
     for (let i = 0; i < tests.length; i += PAGE_SIZE) {
       chunks.push({
         rows: tests.slice(i, i + PAGE_SIZE),
-        department: i > 0 ? `${profileName} (Continued)` : profileName,
+        department: i > 0 ? `${department} (Continued)` : department,
         isProfileEnd: i + PAGE_SIZE >= tests.length,
       });
     }

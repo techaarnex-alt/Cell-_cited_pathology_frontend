@@ -1,3 +1,6 @@
+@tailwind components;
+@tailwind utilities;
+
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   color: #21334d;
@@ -161,9 +164,9 @@ nav button.active {
 }
 
 .logout {
-  margin-top: auto;
-  border: 1px solid rgba(255, 255, 255, .25);
-  text-align: center;
+  margin-top: 12px;
+  border: none;
+  text-align: left;
 }
 
 .workspace {
@@ -172,13 +175,26 @@ nav button.active {
   overflow: hidden;
 }
 
+/* =========================================================
+   UNIVERSAL APPLICATION PAGE CONTAINER (1180px Standard)
+   Matches the Billing & Invoicing layout across all modules
+   ========================================================= */
+.page-container {
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
 .page-head {
   display: flex;
   justify-content: space-between;
   gap: 20px;
   align-items: flex-start;
-  margin: 0 auto 28px;
+  margin: 0 auto 24px;
   max-width: 1180px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .page-head h1 {
@@ -201,9 +217,10 @@ nav button.active {
 
 .eyebrow {
   color: #1d2c62;
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 850;
-  letter-spacing: .13em;
+  letter-spacing: .12em;
+  text-transform: uppercase;
 }
 
 .metrics {
@@ -216,10 +233,10 @@ nav button.active {
 
 .metrics article,
 .panel {
-  background: #fff;
-  border: 1px solid #dce4f3;
-  border-radius: 15px;
-  box-shadow: 0 9px 26px rgba(30, 57, 111, .07);
+  background: #ffffff;
+  border: 1px solid #dce4f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(26, 44, 88, 0.05);
 }
 
 .metrics article {
@@ -242,8 +259,9 @@ nav button.active {
 
 .panel {
   max-width: 1180px;
-  margin: 0 auto 18px;
-  padding: 23px;
+  margin: 0 auto 20px;
+  padding: 22px 26px;
+  box-sizing: border-box;
 }
 
 .panel h2 {
@@ -288,17 +306,18 @@ nav button.active {
 input,
 select {
   width: 100%;
-  border: 1px solid #c7d3e8;
-  border-radius: 7px;
-  padding: 10px;
-  color: #243754;
-  background: #fff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: #0f172a;
+  background: #ffffff;
+  box-sizing: border-box;
 }
 
 input:focus,
 select:focus {
-  outline: 3px solid #e5ecff;
-  border-color: #476eb7;
+  outline: 2px solid rgba(37, 99, 235, 0.15);
+  border-color: #2563eb;
 }
 
 fieldset {
@@ -1289,20 +1308,35 @@ input[disabled] {
   }
 }
 
-@media print {
-  @page {
-    size: A4 portrait;
-    margin: 0;
-  }
+@page {
+  size: A4 portrait;
+  margin: 0mm !important;
+}
 
+@media print {
   body {
     background: #fff;
   }
 
-  .app-shell>aside,
+  .sidebar-track,
+  aside.sidebar-aside,
+  .sidebar-aside,
+  .app-shell > .sidebar-track,
+  .app-shell > aside,
+  header.app-topbar,
+  .app-topbar,
+  header.page-head,
+  .preview-head,
   .page-head,
   .toast {
     display: none !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    left: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
   .workspace {
@@ -1792,9 +1826,8 @@ nav button:hover {
 }
 
 .logout {
-  border-color: rgba(255, 255, 255, .2);
-  color: #dce5ff;
-  justify-content: center;
+  border: none;
+  justify-content: flex-start;
 }
 
 .logout .nav-icon {
@@ -1948,9 +1981,10 @@ nav button:hover {
 }
 
 .metrics.dashboard-metrics {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
   margin-bottom: 22px;
+  width: 100%;
 }
 
 .metrics.dashboard-metrics article {
@@ -2020,6 +2054,10 @@ nav button:hover {
 
 .metrics.dashboard-metrics article:nth-child(5)::after {
   background: #16a34a;
+}
+
+.metrics.dashboard-metrics article:nth-child(6)::after {
+  background: #ef4444;
 }
 
 /* Dashboard Split Grid (Quick Actions + Report Activity) */
@@ -3299,6 +3337,20 @@ button:hover {
     margin: 0 !important;
     padding: 0 !important;
     overflow: visible !important;
+  }
+
+  .workspace-content,
+  .workspace-main,
+  .page-container,
+  .preview-container {
+    display: block !important;
+    width: 210mm !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
   }
 
   .report-stack {

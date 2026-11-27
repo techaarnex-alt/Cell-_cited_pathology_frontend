@@ -20,7 +20,7 @@ import Profile from './components/profile/Profile';
 import Settings from './components/settings/Settings';
 
 export default function App() {
-  const { loggedIn, view } = useApp();
+  const { loggedIn, view, sidebarCollapsed } = useApp();
 
   if (!loggedIn) {
     return (
@@ -32,26 +32,30 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell">
+    <>
       <Toast />
-      <Sidebar />
-      <main className="workspace">
-        <Topbar />
-        {view === 'dashboard' && <Dashboard />}
-        {view === 'patients' && <Patients />}
-        {view === 'patientrecord' && <PatientRecord />}
-        {view === 'newreport' && <TestBooking />}
-        {view === 'billing' && <Billing />}
-        {view === 'results' && <ResultEntry />}
-        {view === 'reports' && <Reports />}
-        {view === 'preview' && <ReportPreview />}
-        {view === 'invoice' && <InvoicePreview />}
-        {view === 'doctors' && <Doctors />}
-        {view === 'tests' && <TestCatalogue />}
-        {view === 'business' && <BusinessReport />}
-        {view === 'profile' && <Profile />}
-        {view === 'setting' && <Settings />}
-      </main>
-    </div>
+      <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+        <Sidebar />
+        <main className="workspace">
+          <Topbar />
+          <div className="workspace-content">
+            {view === 'dashboard' && <Dashboard />}
+            {view === 'patients' && <Patients />}
+            {view === 'patientrecord' && <PatientRecord />}
+            {view === 'newreport' && <TestBooking />}
+            {view === 'billing' && <Billing />}
+            {view === 'results' && <ResultEntry />}
+            {view === 'reports' && <Reports />}
+            {view === 'preview' && <ReportPreview />}
+            {view === 'invoice' && <InvoicePreview />}
+            {view === 'doctors' && <Doctors />}
+            {view === 'tests' && <TestCatalogue />}
+            {view === 'business' && <BusinessReport />}
+            {view === 'profile' && <Profile />}
+            {view === 'setting' && <Settings />}
+          </div>
+        </main>
+      </div>
+    </>
   );
 }

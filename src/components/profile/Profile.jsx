@@ -119,7 +119,12 @@ export default function Profile() {
   };
 
   return (
-    <div className="profile-page-wrapper">
+    <div className="profile-page-wrapper page-container">
+      <header className="page-head">
+        <div>
+          <span className="eyebrow">LABORATORY PROFILE</span>
+        </div>
+      </header>
       <header className="profile-hero-header">
         <div className="profile-avatar-circle">
           <img

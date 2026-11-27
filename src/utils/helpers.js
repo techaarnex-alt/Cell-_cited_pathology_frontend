@@ -15,14 +15,20 @@ export const categoryForTest = (name, testGroups = TEST_GROUPS) => {
 };
 
 export const catalogueDetails = (test) => ({
-  id: test.id || test.backendId || test._id || test.name,
+  id: test.id || test.backendId || test._id || test.name || test.investigation,
   backendId: test.backendId || test._id || (test.id && String(test.id).length === 24 ? test.id : undefined),
-  name: test.name,
+  code: test.code || test.testCode || '',
+  testCode: test.testCode || test.code || '',
+  name: test.name || test.investigation || '',
+  investigation: test.investigation || test.name || '',
   unit: test.unit || test.units || '',
   range: test.range || test.referenceRange || '',
-  category: String(test.category || '').trim() || categoryForTest(test.name),
-  rate: Math.max(0, Number(test.rate ?? test.price ?? 0) || 0),
+  referenceRange: test.referenceRange || test.range || '',
+  category: String(test.category || '').trim() || categoryForTest(test.name || test.investigation),
+  rate: Math.max(0, Number(test.rate ?? (test.pricing?.mrp !== undefined ? test.pricing.mrp : test.price) ?? 0) || 0),
   alertable: test.alertable !== false,
+  method: test.method || '',
+  sampleInstructions: test.sampleInstructions || '',
 });
 
 export const mergeCatalogue = (savedTests = [], applyCurrentReferences = false) => {
@@ -116,7 +122,7 @@ export const patientName = (patient) =>
   [patient?.title, patient?.name].filter(Boolean).join(' ');
 
 export const genderForTitle = (title) =>
-  ({ 'Mr.': 'Male', 'Mrs.': 'Female', 'Ms.': 'Female', Master: 'Male' }[title] ||
+({ 'Mr.': 'Male', 'Mrs.': 'Female', 'Ms.': 'Female', Master: 'Male' }[title] ||
   '');
 
 export const numberFrom = (value) => {
@@ -135,15 +141,15 @@ export const normaliseDoctor = (doctor = {}, index = 0) => ({
   ...doctor,
   id: String(
     doctor.id ||
-      `legacy-doctor-${index}-${String(doctor.name || doctor.doctorName || '')
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')}`
+    `legacy-doctor-${index}-${String(doctor.name || doctor.doctorName || '')
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')}`
   ),
   doctorCode: String(
     doctor.doctorCode ||
-      doctor.code ||
-      `DR-${String(index + 1).padStart(3, '0')}`
+    doctor.code ||
+    `DR-${String(index + 1).padStart(3, '0')}`
   ),
   name: String(doctor.name || doctor.doctorName || '').trim(),
   specialty: String(doctor.specialty || doctor.specialisation || '').trim(),
@@ -199,30 +205,30 @@ export const normalise = (value = {}) => ({
   catalogueVersion: CATALOGUE_VERSION,
   patients: Array.isArray(value.patients)
     ? value.patients.map((patient) => ({
-        ...patient,
-        sampleType: patient.sampleType || 'Blood',
-        registeredOn:
-          patient.registeredOn || patient.createdOn || date(),
-      }))
+      ...patient,
+      sampleType: patient.sampleType || 'Blood',
+      registeredOn:
+        patient.registeredOn || patient.createdOn || date(),
+    }))
     : [],
   reports: Array.isArray(value.reports)
     ? value.reports.map((report) => ({
-        ...report,
-        sampleType: report.sampleType || 'Blood',
-        registeredOn:
-          report.registeredOn || report.createdOn || date(),
-        collectedOn:
-          report.collectedOn || report.createdOn || date(),
-        reportedOn: report.reportedOn || '',
-        fee: Number(report.fee || 0),
-        discount: Number(report.discount || 0),
-        paid: Number(report.paid || 0),
-        paymentMethod: report.paymentMethod || 'Cash',
-        testGroups: Array.isArray(report.testGroups)
-          ? report.testGroups
-          : [],
-        tests: Array.isArray(report.tests) ? report.tests : [],
-      }))
+      ...report,
+      sampleType: report.sampleType || 'Blood',
+      registeredOn:
+        report.registeredOn || report.createdOn || date(),
+      collectedOn:
+        report.collectedOn || report.createdOn || date(),
+      reportedOn: report.reportedOn || '',
+      fee: Number(report.fee || 0),
+      discount: Number(report.discount || 0),
+      paid: Number(report.paid || 0),
+      paymentMethod: report.paymentMethod || 'Cash',
+      testGroups: Array.isArray(report.testGroups)
+        ? report.testGroups
+        : [],
+      tests: Array.isArray(report.tests) ? report.tests : [],
+    }))
     : [],
   doctors: mergeDoctors(
     Array.isArray(value.doctors) ? value.doctors : []
@@ -244,10 +250,131 @@ export const load = () => {
 };
 
 export const printDocument = (name) => {
-  const title = document.title;
-  document.title = name.replace(/[^a-z0-9_-]/gi, '-');
+  const originalTitle = document.title;
+  // Temporarily clear the document title so browsers don't print the title in the header
+  document.title = ' ';
   window.print();
-  window.setTimeout(() => {
-    document.title = title;
-  }, 800);
+  // window.setTimeout(() => {
+  //   document.title = originalTitle;
+  // }, 1000);
+};
+
+export const sortTestsByCatalogueOrder = (items = [], testGroups = []) => {
+  if (!Array.isArray(items) || items.length <= 1) return items;
+  if (!Array.isArray(testGroups) || testGroups.length === 0) return items;
+
+  const orderMap = new Map();
+
+  const setEntry = (key, entry) => {
+    if (!key) return;
+    const strKey = String(key).trim();
+    if (!strKey) return;
+    if (!orderMap.has(strKey)) orderMap.set(strKey, entry);
+    const norm = testKey(strKey);
+    if (norm && !orderMap.has(norm)) orderMap.set(norm, entry);
+  };
+
+  testGroups.forEach((g, gIdx) => {
+    if (!g) return;
+    const catOrder = Number.isFinite(g.order) ? g.order : gIdx + 1;
+    const categoryName = g.name || 'General';
+
+    setEntry(g.name, { catOrder, testOrder: 0, paramOrder: 0, category: categoryName });
+    if (g._id) setEntry(String(g._id), { catOrder, testOrder: 0, paramOrder: 0, category: categoryName });
+    if (g.id) setEntry(String(g.id), { catOrder, testOrder: 0, paramOrder: 0, category: categoryName });
+
+    const tests = Array.isArray(g.catalogTests)
+      ? g.catalogTests
+      : Array.isArray(g.tests)
+      ? g.tests
+      : [];
+
+    tests.forEach((t, tIdx) => {
+      if (!t) return;
+      const testOrder = typeof t === 'object' && Number.isFinite(t.order) ? t.order : tIdx + 1;
+      const tName = typeof t === 'string' ? t : t.name || t.investigation || '';
+      const tId = typeof t === 'object' ? (t._id || t.id) : null;
+
+      if (typeof t === 'object' && Array.isArray(t.parameters) && t.parameters.length > 0) {
+        t.parameters.forEach((p, pIdx) => {
+          if (!p) return;
+          const paramOrder = Number.isFinite(p.order) ? p.order : pIdx + 1;
+          const pName = p.name || '';
+          const pTestId = p.testId ? (p.testId.$oid || String(p.testId)) : null;
+          const pId = p._id ? (p._id.$oid || String(p._id)) : p.id;
+
+          const pEntry = {
+            catOrder,
+            testOrder,
+            paramOrder,
+            category: categoryName,
+            parentTestName: tName,
+          };
+
+          if (pName) setEntry(pName, pEntry);
+          if (pTestId) setEntry(pTestId, pEntry);
+          if (pId) setEntry(pId, pEntry);
+        });
+      }
+
+      const tEntry = {
+        catOrder,
+        testOrder,
+        paramOrder: 0,
+        category: categoryName,
+      };
+      if (tName) setEntry(tName, tEntry);
+      if (typeof t === 'object' && t.shortName) setEntry(t.shortName, tEntry);
+      if (tId) setEntry(String(tId), tEntry);
+    });
+  });
+
+  const getOrderTuple = (testItem) => {
+    const DEFAULT_ORDER = 99999;
+    if (!testItem) return { catOrder: DEFAULT_ORDER, testOrder: DEFAULT_ORDER, paramOrder: DEFAULT_ORDER };
+
+    const idCandidates = [
+      testItem.testId ? String(testItem.testId) : null,
+      testItem.reportItemId ? String(testItem.reportItemId) : null,
+      testItem._id ? String(testItem._id) : null,
+      testItem.id ? String(testItem.id) : null,
+    ].filter(Boolean);
+
+    for (const id of idCandidates) {
+      if (orderMap.has(id)) return orderMap.get(id);
+    }
+
+    const nameCandidates = [
+      testItem.testNameSnapshot,
+      testItem.name,
+      testItem.investigation,
+    ].filter(Boolean);
+
+    for (const name of nameCandidates) {
+      const rawKey = String(name).trim();
+      if (orderMap.has(rawKey)) return orderMap.get(rawKey);
+      const normKey = testKey(rawKey);
+      if (orderMap.has(normKey)) return orderMap.get(normKey);
+    }
+
+    const cat = testItem.categorySnapshot || testItem.category || '';
+    if (cat) {
+      const catEntry = orderMap.get(cat) || orderMap.get(testKey(cat));
+      if (catEntry) {
+        return { catOrder: catEntry.catOrder, testOrder: DEFAULT_ORDER, paramOrder: DEFAULT_ORDER };
+      }
+    }
+
+    return { catOrder: DEFAULT_ORDER, testOrder: DEFAULT_ORDER, paramOrder: DEFAULT_ORDER };
+  };
+
+  return [...items].sort((a, b) => {
+    const orderA = getOrderTuple(a);
+    const orderB = getOrderTuple(b);
+
+    if (orderA.catOrder !== orderB.catOrder) return orderA.catOrder - orderB.catOrder;
+    if (orderA.testOrder !== orderB.testOrder) return orderA.testOrder - orderB.testOrder;
+    if (orderA.paramOrder !== orderB.paramOrder) return orderA.paramOrder - orderB.paramOrder;
+    return 0;
+  });
 };

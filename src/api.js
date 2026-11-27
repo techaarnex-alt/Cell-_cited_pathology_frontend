@@ -1,7 +1,9 @@
 const API_BASE = '/api/v1';
 
 const getAuthHeaders = () => {
-  const token = sessionStorage.getItem('cell-cited-token');
+  const token =
+    localStorage.getItem('cell-cited-token') ||
+    sessionStorage.getItem('cell-cited-token');
   return {
     'Content-Type': 'application/json',
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -36,6 +38,9 @@ export const api = {
     });
     const data = await handleResponse(res);
     if (data.token) {
+      localStorage.setItem('cell-cited-token', data.token);
+      localStorage.setItem('cell-cited-session', 'active');
+      localStorage.setItem('cell-cited-user', JSON.stringify(data.user));
       sessionStorage.setItem('cell-cited-token', data.token);
       sessionStorage.setItem('cell-cited-session', 'active');
       sessionStorage.setItem('cell-cited-user', JSON.stringify(data.user));
@@ -59,10 +64,23 @@ export const api = {
     return handleResponse(res);
   },
 
-  logout() {
-    sessionStorage.removeItem('cell-cited-token');
-    sessionStorage.removeItem('cell-cited-session');
-    sessionStorage.removeItem('cell-cited-user');
+  async logout() {
+    try {
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      }).catch(() => {});
+    } catch (_) {
+      // Backend logout network failure shouldn't block local cleanup
+    } finally {
+      // Remove everything from localStorage (including token) and sessionStorage
+      try {
+        localStorage.clear();
+      } catch (_) {}
+      try {
+        sessionStorage.clear();
+      } catch (_) {}
+    }
   },
 
   async forgetPassword(payload) {
@@ -150,8 +168,9 @@ export const api = {
     return handleResponse(res);
   },
 
-  async getTests() {
-    const res = await fetch(`${API_BASE}/tests?limit=200`, {
+  async getTests(params = {}) {
+    const query = new URLSearchParams({ limit: 1500, ...params }).toString();
+    const res = await fetch(`${API_BASE}/tests?${query}`, {
       headers: getAuthHeaders(),
     });
     return handleResponse(res);
@@ -244,6 +263,15 @@ export const api = {
     return handleResponse(res);
   },
 
+  async reorderReportItems(reportId, orderedItemIds) {
+    const res = await fetch(`${API_BASE}/reports/${encodeURIComponent(reportId)}/reorder`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ orderedItemIds }),
+    });
+    return handleResponse(res);
+  },
+
   async getInvoices(params = {}) {
     const query = new URLSearchParams(params).toString();
     const res = await fetch(`${API_BASE}/invoices${query ? `?${query}` : '?limit=100'}`, {
@@ -296,6 +324,117 @@ export const api = {
       headers: getAuthHeaders(),
       body: JSON.stringify(payload),
     });
+    return handleResponse(res);
+  },
+
+  // Nested Test Catalogue API
+  async getCatalogueCategories() {
+    const res = await fetch(`${API_BASE}/test-catalogue/categories`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  async getCatalogueTests(category = 'All', params = {}) {
+    const query = new URLSearchParams(params).toString();
+    const cat = encodeURIComponent(category || 'All');
+    const res = await fetch(`${API_BASE}/test-catalogue/categories/${cat}/tests?${query}`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  async getCatalogueTest(testId) {
+    const res = await fetch(`${API_BASE}/test-catalogue/tests/${encodeURIComponent(testId)}`, {
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  async createCatalogueTest(category, payload) {
+    const cat = encodeURIComponent(category || 'Others');
+    const res = await fetch(`${API_BASE}/test-catalogue/categories/${cat}/tests`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(res);
+  },
+
+  async updateCatalogueTest(testId, payload) {
+    const res = await fetch(`${API_BASE}/test-catalogue/tests/${encodeURIComponent(testId)}`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(res);
+  },
+
+  async deleteCatalogueTest(testId) {
+    const res = await fetch(`${API_BASE}/test-catalogue/tests/${encodeURIComponent(testId)}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
+  async reorderCatalogueCategories(orderedCategoryNames) {
+    const res = await fetch(`${API_BASE}/test-catalogue/categories/reorder`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ orderedCategoryNames }),
+    });
+    return handleResponse(res);
+  },
+
+  async reorderCategoryTests(category, orderedTestIds) {
+    const cat = encodeURIComponent(category || 'All');
+    const res = await fetch(`${API_BASE}/test-catalogue/categories/${cat}/reorder`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ orderedTestIds }),
+    });
+    return handleResponse(res);
+  },
+
+  async reorderTestParameters(testId, orderedParamIds) {
+    const res = await fetch(`${API_BASE}/test-catalogue/tests/${encodeURIComponent(testId)}/parameters/reorder`, {
+      method: 'PUT',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ orderedParamIds }),
+    });
+    return handleResponse(res);
+  },
+
+  async addCatalogueParameter(testId, payload) {
+    const res = await fetch(`${API_BASE}/test-catalogue/tests/${encodeURIComponent(testId)}/parameters`, {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify(payload),
+    });
+    return handleResponse(res);
+  },
+
+  async updateCatalogueParameter(testId, paramId, payload) {
+    const res = await fetch(
+      `${API_BASE}/test-catalogue/tests/${encodeURIComponent(testId)}/parameters/${encodeURIComponent(paramId)}`,
+      {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+      }
+    );
+    return handleResponse(res);
+  },
+
+  async removeCatalogueParameter(testId, paramId) {
+    const res = await fetch(
+      `${API_BASE}/test-catalogue/tests/${encodeURIComponent(testId)}/parameters/${encodeURIComponent(paramId)}`,
+      {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      }
+    );
     return handleResponse(res);
   },
 };

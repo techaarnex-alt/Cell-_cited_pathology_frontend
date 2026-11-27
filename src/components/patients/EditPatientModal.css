@@ -15,6 +15,23 @@
   animation: fadeIn 0.18s ease-out;
 }
 
+.field-label {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+
+.required-star {
+  color: inherit !important;
+  font-weight: 700 !important;
+  margin-left: 2px !important;
+  font-size: 13px !important;
+  display: inline !important;
+  vertical-align: baseline !important;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

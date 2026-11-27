@@ -1,3 +1,19 @@
+.test-booking-container {
+  max-width: 1180px !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.test-booking-container .panel {
+  background: #ffffff;
+  border: 1px solid #dce4f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 18px rgba(26, 44, 88, 0.05);
+  padding: 22px 26px;
+  margin-bottom: 24px;
+}
+
 .test-booking-selected-patient-box {
   background: #f8fafc;
   border: 1px solid #cbd5e1;

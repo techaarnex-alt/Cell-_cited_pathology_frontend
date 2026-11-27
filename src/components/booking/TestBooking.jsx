@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { SAMPLE_TYPES } from '../../constants';
 import { date, patientName } from '../../utils/helpers';
-import InvestigationPicker from './InvestigationPicker';
+import CategoryInvestigationPicker from './CategoryInvestigationPicker';
 import './TestBooking.css';
 
 export default function TestBooking() {
@@ -14,6 +14,7 @@ export default function TestBooking() {
     createReport,
     catalogue,
     testGroups,
+    bookingPickerKey,
     setBookingFee,
     setView,
   } = useApp();
@@ -23,7 +24,7 @@ export default function TestBooking() {
     (data.patients.length ? data.patients[0] : null);
 
   return (
-    <>
+    <div className="page-container test-booking-container">
       <header className="page-head">
         <div>
           <span className="eyebrow">TEST BOOKING</span>
@@ -48,8 +49,8 @@ export default function TestBooking() {
                     <b>
                       {selectedBookingPatient
                         ? `${selectedBookingPatient.id} · ${patientName(
-                            selectedBookingPatient
-                          )}`
+                          selectedBookingPatient
+                        )}`
                         : 'No patient selected'}
                     </b>
                   </span>
@@ -134,17 +135,20 @@ export default function TestBooking() {
             </label>
           </div>
         </fieldset>
-        <InvestigationPicker
-          key={`booking-picker-${selectedBookingPatient?.id || 'none'}-${
-            testGroups.length
-          }-${catalogue.length}`}
-          catalogue={catalogue}
-          testGroups={testGroups}
-          booking
-          onSelectionChange={(total) => setBookingFee(total)}
-        />
-        <button>Create draft report</button>
+        <fieldset className="visit-tests">
+          <legend>Select tests for this visit</legend>
+          <p className="field-help">
+            Choose a category from the 10 main groups below to open investigations with rates. A draft report and billing entry will be created from these selections.
+          </p>
+          <CategoryInvestigationPicker
+            key={bookingPickerKey || `booking-picker-${selectedBookingPatient?.id || 'none'}`}
+            catalogue={catalogue}
+            testGroups={testGroups}
+            onSelectionChange={(total) => setBookingFee && setBookingFee(total)}
+          />
+        </fieldset>
+        <button type="submit">Create draft report</button>
       </form>
-    </>
+    </div>
   );
 }

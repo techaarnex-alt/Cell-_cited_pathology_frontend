@@ -23,7 +23,7 @@ export default function PatientRecord() {
   if (!recordPatient) return null;
 
   return (
-    <>
+    <div className="page-container patient-record-container">
       <header className="page-head">
         <div>
           <span className="eyebrow">PATIENT RECORD</span>
@@ -123,6 +123,6 @@ export default function PatientRecord() {
           onClose={() => setEditingReport(null)}
         />
       )}
-    </>
+    </div>
   );
 }

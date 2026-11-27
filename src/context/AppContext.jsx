@@ -30,8 +30,25 @@ import {
 export const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
+  const getInitialView = () => {
+    try {
+      const pathname = window.location.pathname;
+      if (pathname.startsWith('/test-catalogue') || pathname.startsWith('/tests')) return 'tests';
+      if (pathname.startsWith('/patients')) return 'patients';
+      if (pathname.startsWith('/billing')) return 'billing';
+      if (pathname.startsWith('/results')) return 'results';
+      if (pathname.startsWith('/reports')) return 'reports';
+      if (pathname.startsWith('/doctors')) return 'doctors';
+      if (pathname.startsWith('/business')) return 'business';
+      if (pathname.startsWith('/profile')) return 'profile';
+      if (pathname.startsWith('/setting')) return 'setting';
+      if (pathname.startsWith('/newreport')) return 'newreport';
+    } catch {}
+    return 'dashboard';
+  };
+
   const [data, setData] = useState(load);
-  const [view, setView] = useState('dashboard');
+  const [view, setView] = useState(getInitialView);
   const [selectedId, setSelectedId] = useState(null);
   const [invoiceId, setInvoiceId] = useState(null);
   const [patientRecordId, setPatientRecordId] = useState(null);
@@ -63,13 +80,34 @@ export function AppProvider({ children }) {
   const [authNotice, setAuthNotice] = useState('');
   const [authNoticeType, setAuthNoticeType] = useState('error');
   const [loginError, setLoginError] = useState('');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('cell-cited-sidebar-collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('cell-cited-sidebar-collapsed', String(next));
+      } catch {}
+      return next;
+    });
+  };
 
   const [loggedIn, setLoggedIn] = useState(
-    sessionStorage.getItem('cell-cited-session') === 'active'
+    () =>
+      localStorage.getItem('cell-cited-session') === 'active' ||
+      sessionStorage.getItem('cell-cited-session') === 'active'
   );
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const saved = sessionStorage.getItem('cell-cited-user');
+      const saved =
+        localStorage.getItem('cell-cited-user') ||
+        sessionStorage.getItem('cell-cited-user');
       if (saved) {
         const parsed = JSON.parse(saved);
         return {
@@ -85,14 +123,45 @@ export function AppProvider({ children }) {
     return DEFAULT_USER;
   });
   const [labProfile, setLabProfile] = useState(DEFAULT_LAB_PROFILE);
-  const [testGroups, setTestGroups] = useState(() => {
+  const [testGroups, setTestGroups] = useState([]);
+
+  // Ensure no test groups are read/stored in localStorage
+  useEffect(() => {
     try {
-      const saved = localStorage.getItem('cell-cited-test-groups');
-      return saved ? JSON.parse(saved) : [];
-    } catch {
-      return [];
-    }
-  });
+      localStorage.removeItem('cell-cited-test-groups');
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const pathname = window.location.pathname;
+      if (pathname.startsWith('/test-catalogue') || pathname.startsWith('/tests')) {
+        setView('tests');
+      } else if (pathname.startsWith('/patients')) {
+        setView('patients');
+      } else if (pathname.startsWith('/billing')) {
+        setView('billing');
+      } else if (pathname.startsWith('/results')) {
+        setView('results');
+      } else if (pathname.startsWith('/reports')) {
+        setView('reports');
+      } else if (pathname.startsWith('/doctors')) {
+        setView('doctors');
+      } else if (pathname.startsWith('/business')) {
+        setView('business');
+      } else if (pathname.startsWith('/profile')) {
+        setView('profile');
+      } else if (pathname.startsWith('/setting')) {
+        setView('setting');
+      } else if (pathname.startsWith('/newreport')) {
+        setView('newreport');
+      } else if (pathname === '/' || pathname === '/dashboard') {
+        setView('dashboard');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   useEffect(() => {
     if (newReportPatientId) {
@@ -133,12 +202,14 @@ export function AppProvider({ children }) {
       }
 
       if (Array.isArray(fetchedGroups) && fetchedGroups.length) {
-        const processedGroups = fetchedGroups.map((g) => ({
+        const processedGroups = fetchedGroups.map((g, idx) => ({
           id: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           backendId: g._id,
           name: g.name,
+          order: g.order !== undefined ? g.order : idx + 1,
           description: g.description,
           category: g.category,
+          catalogTests: Array.isArray(g.tests) ? g.tests : [],
           tests:
             g.testNames && g.testNames.length
               ? g.testNames
@@ -146,14 +217,9 @@ export function AppProvider({ children }) {
               ? g.testIds.map((t) => (typeof t === 'object' && t ? t.name : t))
               : (g.tests || []).map((t) => (typeof t === 'object' && t ? t.name : t)),
           testObjects: Array.isArray(g.testIds) ? g.testIds : [],
+          rawGroup: g,
         }));
         setTestGroups(processedGroups);
-        try {
-          localStorage.setItem(
-            'cell-cited-test-groups',
-            JSON.stringify(processedGroups)
-          );
-        } catch {}
 
         const extractedTests = fetchedGroups.flatMap((g) =>
           (Array.isArray(g.testIds) ? g.testIds : []).map((t) => ({
@@ -305,12 +371,14 @@ export function AppProvider({ children }) {
       }
 
       if (Array.isArray(fetchedGroups) && fetchedGroups.length) {
-        const processedGroups = fetchedGroups.map((g) => ({
+        const processedGroups = fetchedGroups.map((g, idx) => ({
           id: g.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           backendId: g._id,
           name: g.name,
+          order: g.order !== undefined ? g.order : idx + 1,
           description: g.description,
           category: g.category,
+          catalogTests: Array.isArray(g.tests) ? g.tests : [],
           tests:
             g.testNames && g.testNames.length
               ? g.testNames
@@ -318,14 +386,9 @@ export function AppProvider({ children }) {
               ? g.testIds.map((t) => (typeof t === 'object' && t ? t.name : t))
               : (g.tests || []).map((t) => (typeof t === 'object' && t ? t.name : t)),
           testObjects: Array.isArray(g.testIds) ? g.testIds : [],
+          rawGroup: g,
         }));
         setTestGroups(processedGroups);
-        try {
-          localStorage.setItem(
-            'cell-cited-test-groups',
-            JSON.stringify(processedGroups)
-          );
-        } catch {}
       }
 
       setData((current) => {
@@ -422,6 +485,7 @@ export function AppProvider({ children }) {
               doctorId: r.doctorId || '',
               doctorPercentage: r.doctorSnapshot?.referralPercentage || 0,
               testGroups: r.testGroupNames || [],
+              hasCustomItemOrder: Boolean(r.hasCustomItemOrder),
               tests: (r.items || []).map((item) => ({
                 name: item.testNameSnapshot,
                 unit: item.unitSnapshot,
@@ -431,6 +495,9 @@ export function AppProvider({ children }) {
                 rate: item.rateSnapshot,
                 alertable: item.alertableSnapshot,
                 reportItemId: item._id,
+                testId: item.testId,
+                category: item.categorySnapshot || '',
+                displayOrder: item.displayOrder !== undefined ? item.displayOrder : 0,
               })),
             };
           });
@@ -477,12 +544,16 @@ export function AppProvider({ children }) {
               ? fetchedTests.map((t) => ({
                   id: t._id,
                   backendId: t._id,
-                  name: t.name,
-                  category: t.category,
+                  code: t.code || t.testCode || '',
+                  name: t.name || t.investigation,
+                  investigation: t.investigation || t.name,
+                  category: t.category || 'General',
                   unit: t.unit || '',
-                  range: t.referenceRange || '',
-                  rate: t.rate || 0,
+                  range: t.referenceRange || t.range || '',
+                  rate: t.rate !== undefined ? Number(t.rate) : Number(t.pricing?.mrp || t.pricing?.net || 0),
                   alertable: t.alertable !== false,
+                  method: t.method || '',
+                  sampleInstructions: t.sampleInstructions || '',
                 }))
               : []),
             ...groupTests,
@@ -583,36 +654,93 @@ export function AppProvider({ children }) {
     const individuallySelected = form.getAll('tests');
     const selectedGroupIds = form.getAll('testGroups');
     const groupedTests = testGroups
-      .filter((group) => selectedGroupIds.includes(group.id))
+      .filter(
+        (group) =>
+          selectedGroupIds.includes(group.id) ||
+          selectedGroupIds.includes(group.name)
+      )
       .flatMap((group) => group.tests || []);
     const names = new Set([...individuallySelected, ...groupedTests]);
 
     const resolvedTests = Array.from(names).map((name) => {
+      const cleanLower = String(name || '').trim().toLowerCase();
+
+      // 1. Search in testGroups.tests (rich nested tests with parameters & rates, e.g. Hemoglobin Rs.500)
+      for (const group of testGroups) {
+        if (Array.isArray(group.tests)) {
+          const matchedTest = group.tests.find((t) => {
+            const tName =
+              typeof t === 'string' ? t : t?.name || t?.investigation;
+            return String(tName || '').trim().toLowerCase() === cleanLower;
+          });
+          if (matchedTest && typeof matchedTest === 'object') {
+            let rate = 0;
+            let unit = matchedTest.unit || '';
+            let range = matchedTest.referenceRange || '';
+
+            if (
+              Array.isArray(matchedTest.parameters) &&
+              matchedTest.parameters.length > 0
+            ) {
+              const pWithRate = matchedTest.parameters.find(
+                (p) =>
+                  p &&
+                  p.rate !== undefined &&
+                  p.rate !== null &&
+                  Number(p.rate) > 0
+              );
+              if (pWithRate) rate = Number(pWithRate.rate);
+              else if (matchedTest.parameters[0]?.rate !== undefined)
+                rate = Number(matchedTest.parameters[0].rate);
+
+              if (!unit && matchedTest.parameters[0]?.unit)
+                unit = matchedTest.parameters[0].unit;
+              if (!range && matchedTest.parameters[0]?.referenceRange)
+                range = matchedTest.parameters[0].referenceRange;
+            }
+            if (!rate && matchedTest.rate) rate = Number(matchedTest.rate);
+            if (!rate && matchedTest.pricing?.mrp)
+              rate = Number(matchedTest.pricing.mrp);
+
+            return {
+              id: matchedTest._id || matchedTest.id || name,
+              name: matchedTest.name || name,
+              category: group.name,
+              unit,
+              range,
+              rate,
+            };
+          }
+        }
+      }
+
+      // 2. Search in catalogue (data.tests)
       const match = catalogue.find(
-        (t) => t.name?.toLowerCase() === name.toLowerCase()
+        (t) =>
+          (t.name || t.investigation || '').trim().toLowerCase() === cleanLower
       );
-      if (match) return match;
-      const fromObj = testGroups
-        .flatMap((g) => g.testObjects || [])
-        .find((t) => t.name?.toLowerCase() === name.toLowerCase());
-      if (fromObj) {
+      if (match) {
         return {
-          id: fromObj._id || name,
-          name: fromObj.name,
-          category: fromObj.category,
-          unit: fromObj.unit || '',
-          range: fromObj.referenceRange || '',
-          rate: fromObj.rate || 0,
+          id: match.id || match._id || name,
+          name: match.name || name,
+          category: match.category || 'General',
+          unit: match.unit || '',
+          range: match.range || match.referenceRange || '',
+          rate: Number(match.rate || 0),
         };
       }
+
       return { name, rate: 0, unit: '', range: '' };
     });
 
+    const groups = new Set([
+      ...selectedGroupIds,
+      ...resolvedTests.map((t) => t.category).filter(Boolean),
+    ]);
+
     return {
       tests: resolvedTests,
-      groups: testGroups
-        .filter((group) => selectedGroupIds.includes(group.id))
-        .map((group) => group.name),
+      groups: Array.from(groups),
     };
   };
 
@@ -635,11 +763,21 @@ export function AppProvider({ children }) {
     );
 
     const title = String(form.get('title') || '');
-    const name = String(form.get('name') || '').trim();
+    const rawName = String(form.get('name') || '').trim();
+    const firstName = String(form.get('firstName') || '').trim();
+    const lastName = String(form.get('lastName') || '').trim();
+    const name = rawName || [firstName, lastName].filter(Boolean).join(' ');
     const age = Number(form.get('age'));
     const ageUnit = String(form.get('ageUnit') || 'Years');
     const gender = String(form.get('gender') || '');
     const mobile = String(form.get('mobile') || '').trim();
+    const email = String(form.get('email') || '').trim();
+    const aadhaar = String(form.get('aadhaar') || '').trim();
+    const patientHistory = String(form.get('patientHistory') || '').trim();
+    const onlineReportRequested =
+      form.get('onlineReportRequested') === 'on' ||
+      form.get('onlineReportRequested') === 'true' ||
+      Boolean(form.get('onlineReportRequested'));
     const address = String(form.get('address') || '').trim();
     const sampleType =
       String(form.get('sampleType') || 'Blood').trim() || 'Blood';
@@ -648,6 +786,9 @@ export function AppProvider({ children }) {
     const collectedOn =
       String(form.get('collectedOn') || registeredOn).trim() || registeredOn;
     const reportedOn = String(form.get('reportedOn') || '').trim();
+    const feeOverrideRaw = form.get('feeOverride');
+    const feeOverride = feeOverrideRaw !== null && feeOverrideRaw !== '' ? Number(feeOverrideRaw) : null;
+    const paidAmount = Number(form.get('paidAmount') || 0);
 
     let backendResult = null;
     let apiMsg = '';
@@ -660,11 +801,16 @@ export function AppProvider({ children }) {
         ageUnit,
         gender,
         mobile,
+        email,
+        aadhaar,
+        patientHistory,
+        onlineReportRequested,
         address,
         sampleType,
         registeredOn,
         collectedOn,
         reportedOn,
+        feeOverride: feeOverride !== null ? feeOverride : undefined,
         doctorId:
           referringDoctor?.backendId ||
           (referringDoctor?.id?.length === 24 ? referringDoctor.id : undefined),
@@ -691,6 +837,10 @@ export function AppProvider({ children }) {
       ageUnit,
       gender,
       mobile,
+      email,
+      aadhaar,
+      patientHistory,
+      onlineReportRequested,
       sampleType,
       registeredOn,
       doctorId: referringDoctor?.id || '',
@@ -715,6 +865,7 @@ export function AppProvider({ children }) {
           doctorId: referringDoctor?.id || '',
           doctorPercentage: referringDoctor?.referralPercentage || 0,
           testGroups: chosen.groups,
+          hasCustomItemOrder: Boolean(createdReport.hasCustomItemOrder),
           tests: (createdReport.items || []).map((i) => ({
             name: i.testNameSnapshot,
             unit: i.unitSnapshot,
@@ -724,6 +875,9 @@ export function AppProvider({ children }) {
             rate: i.rateSnapshot,
             alertable: i.alertableSnapshot,
             reportItemId: i._id,
+            testId: i.testId,
+            category: i.categorySnapshot || '',
+            displayOrder: i.displayOrder !== undefined ? i.displayOrder : 0,
           })),
         }
       : {
@@ -736,11 +890,14 @@ export function AppProvider({ children }) {
           reportedOn,
           status: 'Draft',
           createdOn: registeredOn,
-          fee: chosen.tests.reduce(
-            (total, test) => total + Number(test.rate || 0),
-            0
-          ),
-          paid: 0,
+          fee:
+            feeOverride !== null
+              ? feeOverride
+              : chosen.tests.reduce(
+                  (total, test) => total + Number(test.rate || 0),
+                  0
+                ),
+          paid: paidAmount,
           doctorId: referringDoctor?.id || '',
           doctorPercentage: referringDoctor?.referralPercentage || 0,
           testGroups: chosen.groups,
@@ -809,6 +966,10 @@ export function AppProvider({ children }) {
       ageUnit: payload.ageUnit || existing?.ageUnit || 'Years',
       gender: payload.gender || existing?.gender || '',
       mobile: payload.mobile !== undefined ? payload.mobile.trim() : existing?.mobile || '',
+      email: payload.email !== undefined ? payload.email.trim() : existing?.email || '',
+      aadhaar: payload.aadhaar !== undefined ? payload.aadhaar.trim() : existing?.aadhaar || '',
+      patientHistory: payload.patientHistory !== undefined ? payload.patientHistory.trim() : existing?.patientHistory || '',
+      onlineReportRequested: payload.onlineReportRequested !== undefined ? Boolean(payload.onlineReportRequested) : existing?.onlineReportRequested || false,
       address: payload.address !== undefined ? payload.address.trim() : existing?.address || '',
       sampleType: payload.sampleType !== undefined ? payload.sampleType : existing?.sampleType || 'Blood',
       registeredOn: payload.registeredOn !== undefined ? payload.registeredOn : existing?.registeredOn || '',
@@ -1011,6 +1172,71 @@ export function AppProvider({ children }) {
     setView('invoice');
   };
 
+  const reorderReportTests = async (reportId, orderedItemIds) => {
+    try {
+      const targetId = String(reportId);
+      const res = await api.reorderReportItems(targetId, orderedItemIds);
+      if (res) {
+        setData((current) => {
+          const next = { ...current };
+          next.reports = (next.reports || []).map((r) => {
+            if (
+              String(r.id) === targetId ||
+              String(r.backendId) === targetId ||
+              String(r.number) === targetId
+            ) {
+              const updatedItems = res.items || [];
+              const testMap = new Map();
+              (r.tests || []).forEach((t) =>
+                testMap.set(String(t.reportItemId || t.name), t)
+              );
+
+              const newTests = updatedItems.map((item) => {
+                const existing =
+                  testMap.get(String(item._id)) ||
+                  testMap.get(item.testNameSnapshot);
+                return {
+                  ...(existing || {}),
+                  name: item.testNameSnapshot,
+                  unit: item.unitSnapshot,
+                  range: item.rangeSnapshot,
+                  value:
+                    item.value !== undefined ? item.value : existing?.value || '',
+                  remark:
+                    item.remark !== undefined
+                      ? item.remark
+                      : existing?.remark || '',
+                  rate: item.rateSnapshot,
+                  alertable: item.alertableSnapshot,
+                  reportItemId: item._id,
+                  testId: item.testId,
+                  category: item.categorySnapshot || existing?.category || '',
+                  displayOrder: item.displayOrder,
+                };
+              });
+
+              return {
+                ...r,
+                hasCustomItemOrder: true,
+                tests: newTests,
+              };
+            }
+            return r;
+          });
+          return next;
+        });
+        setNotice({
+          message: 'Investigation order saved successfully.',
+          type: 'success',
+        });
+        return res;
+      }
+    } catch (err) {
+      console.warn('Backend reorderReportTests error:', err);
+      throw err;
+    }
+  };
+
   const shareReportPdf = async () => {
     if (!selected) return;
     const outputMode = reportPrintOption;
@@ -1204,6 +1430,7 @@ export function AppProvider({ children }) {
             backendReport.doctorSnapshot?.referralPercentage ??
             0,
           testGroups: chosen.groups,
+          hasCustomItemOrder: Boolean(backendReport.hasCustomItemOrder),
           tests: (backendReport.items || []).map((i) => ({
             name: i.testNameSnapshot,
             unit: i.unitSnapshot,
@@ -1213,6 +1440,9 @@ export function AppProvider({ children }) {
             rate: i.rateSnapshot,
             alertable: i.alertableSnapshot,
             reportItemId: i._id,
+            testId: i.testId,
+            category: i.categorySnapshot || '',
+            displayOrder: i.displayOrder !== undefined ? i.displayOrder : 0,
           })),
         }
       : {
@@ -1280,16 +1510,17 @@ export function AppProvider({ children }) {
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     const test = catalogueDetails({
-      name: String(form.get('name')).trim(),
-      category: String(form.get('category')).trim(),
-      unit: String(form.get('unit')).trim(),
-      range: String(form.get('range')).trim(),
+      code: String(form.get('code') || '').trim().toUpperCase(),
+      name: String(form.get('name') || '').trim(),
+      category: String(form.get('category') || '').trim(),
+      unit: String(form.get('unit') || '').trim(),
+      range: String(form.get('range') || '').trim(),
       rate: form.get('rate'),
     });
     if (!test.name) return;
     if (
       catalogue.some(
-        (item) => item.name.toLowerCase() === test.name.toLowerCase()
+        (item) => (item.name || '').toLowerCase() === test.name.toLowerCase()
       )
     ) {
       setNotice('This investigation already exists.');
@@ -1298,6 +1529,7 @@ export function AppProvider({ children }) {
     let backendTest = null;
     try {
       backendTest = await api.createTest({
+        code: test.code,
         name: test.name,
         category: test.category || 'Biochemistry',
         unit: test.unit || '',
@@ -1722,9 +1954,21 @@ export function AppProvider({ children }) {
     }
   };
 
-  const handleLogout = () => {
-    api.logout();
-    setLoggedIn(false);
+  const handleLogout = async () => {
+    try {
+      await api.logout();
+    } catch (err) {
+      console.warn('Logout error:', err);
+    } finally {
+      try {
+        localStorage.clear();
+      } catch (_) {}
+      try {
+        sessionStorage.clear();
+      } catch (_) {}
+      setLoggedIn(false);
+      setView('dashboard');
+    }
   };
 
   const value = {
@@ -1801,6 +2045,9 @@ export function AppProvider({ children }) {
     setLabProfile,
     testGroups,
     setTestGroups,
+    sidebarCollapsed,
+    setSidebarCollapsed,
+    toggleSidebar,
 
     // Computed
     selected,
@@ -1844,6 +2091,7 @@ export function AppProvider({ children }) {
     handleSendOtp,
     handleResendOtp,
     handleResetPassword,
+    reorderReportTests,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

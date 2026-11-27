@@ -28,7 +28,7 @@ export default function ReportPreview() {
   }
 
   return (
-    <>
+    <div className="page-container preview-container">
       <header className="page-head preview-head">
         <div>
           <span className="eyebrow">REPORT PREVIEW</span>
@@ -69,10 +69,12 @@ export default function ReportPreview() {
         labProfile={labProfile}
         testGroups={testGroups}
         withoutLetterhead={
-          reportPrintMode === 'without' || reportPdfMode === 'without'
+          reportPrintOption === 'without' ||
+          reportPrintMode === 'without' ||
+          reportPdfMode === 'without'
         }
         pdfExport={reportPdfMode !== null}
       />
-    </>
+    </div>
   );
 }

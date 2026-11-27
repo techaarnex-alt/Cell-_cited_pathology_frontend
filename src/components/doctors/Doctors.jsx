@@ -132,7 +132,7 @@ export default function Doctors({
   const addDoctor = app.addDoctor;
 
   return (
-    <>
+    <div className="page-container doctors-container">
       <header className="page-head">
         <div>
           <span className="eyebrow">REFERRING DOCTORS</span>
@@ -245,6 +245,6 @@ export default function Doctors({
           </table>
         </div>
       </section>
-    </>
+    </div>
   );
 }

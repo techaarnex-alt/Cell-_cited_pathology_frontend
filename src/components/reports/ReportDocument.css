@@ -288,18 +288,47 @@
   top: 40mm;
 }
 
+@page {
+  size: A4 portrait;
+  margin: 0mm !important;
+}
+
 @media print {
-  .report-stack {
-    margin: 0;
-    width: 210mm;
+  .preview-head,
+  header.preview-head,
+  .page-head,
+  header.page-head,
+  .report-print-control,
+  .toast,
+  .app-toast {
+    display: none !important;
   }
+
+  .preview-container,
+  .page-container {
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .report-stack {
+    margin: 0 auto !important;
+    width: 210mm !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
   .report-paper {
-    margin: 0;
-    box-shadow: none;
+    margin: 0 auto !important;
+    box-shadow: none !important;
     page-break-after: always;
     break-after: page;
-    height: 297mm;
+    height: 297mm !important;
+    width: 210mm !important;
   }
+
   .report-paper:last-child {
     page-break-after: auto;
     break-after: auto;

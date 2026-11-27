@@ -15,7 +15,7 @@ export default function Reports() {
     : null;
 
   return (
-    <>
+    <div className="page-container reports-container">
       <header className="page-head">
         <div>
           <span className="eyebrow">REPORTS</span>
@@ -38,6 +38,6 @@ export default function Reports() {
           onClose={() => setEditingReport(null)}
         />
       )}
-    </>
+    </div>
   );
 }
