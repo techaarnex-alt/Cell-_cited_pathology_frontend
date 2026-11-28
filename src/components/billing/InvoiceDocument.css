@@ -14,6 +14,18 @@
   padding: 11mm;
   color: #273b61;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.invoice-content-body {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+.invoice-bottom-section {
+  margin-top: auto;
+  width: 100%;
 }
 
 .invoice-header {
@@ -30,12 +42,22 @@
 .invoice-mark {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: #263f85;
-  color: #fff;
-  font: 900 18px Georgia, serif;
+  background: #ffffff;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.invoice-mark img,
+.invoice-logo-img,
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .invoice-header h2 {
@@ -146,8 +168,8 @@
 }
 
 .invoice-summary {
-  width: 78mm;
-  margin: 13px 0 0 auto;
+  width: 80mm;
+  margin: 0 0 0 auto;
   border-top: 2px solid #ee5256;
   font-size: 13.5px;
 }
@@ -155,7 +177,7 @@
 .invoice-summary p {
   display: flex;
   justify-content: space-between;
-  margin: 7px 0;
+  margin: 6px 0;
 }
 
 .invoice-summary .grand {
@@ -170,7 +192,7 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  margin-top: 48px;
+  margin-top: 100px;
   padding-top: 10px;
   border-top: 1px solid #dce5f3;
   color: #5a6c88;
@@ -182,21 +204,50 @@
   font-size: 12.5px;
 }
 
+@page {
+  size: A4 portrait;
+  margin: 0;
+}
+
 @media print {
+  body {
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .invoice-stack {
     gap: 0;
   }
+
   .invoice-document {
     width: 210mm;
     min-height: 297mm;
+    height: 297mm;
     margin: 0;
+    padding: 11mm;
     border: 0;
     box-shadow: none;
     break-after: page;
     page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
   }
+
   .invoice-document:last-child {
     break-after: auto;
     page-break-after: auto;
+  }
+
+  .invoice-content-body {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
+  .invoice-bottom-section {
+    margin-top: auto;
+    width: 100%;
   }
 }

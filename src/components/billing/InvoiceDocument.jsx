@@ -9,13 +9,37 @@ export default function InvoiceDocument({
 }) {
   if (!report) return null;
 
-  const fee = Number(report.fee || 0);
+  const rawTests = report.tests || [];
+  
+  // Authoritative line items:
+  // 1. If report has bookedServices, use them (1 line item per booked service or panel)
+  // 2. Else if report has invoice.itemSnapshots, use them
+  // 3. Else fallback to report.tests with explicit test rates
+  const lineItems = Array.isArray(report.bookedServices) && report.bookedServices.length > 0
+    ? report.bookedServices.map((s) => ({
+        name: s.name,
+        rate: Number(s.rateSnapshot != null ? s.rateSnapshot : (s.name?.toLowerCase() === 'hemoglobin' ? 500 : 0)),
+        testType: s.testType,
+      }))
+    : (Array.isArray(report.invoice?.itemSnapshots) && report.invoice.itemSnapshots.length > 0
+        ? report.invoice.itemSnapshots.map((s) => ({
+            name: s.testName,
+            rate: Number(s.rate != null ? s.rate : (s.testName?.toLowerCase() === 'hemoglobin' ? 500 : 0)),
+            testType: s.testType,
+          }))
+        : rawTests.map((t) => ({
+            name: t.name,
+            rate: Number(t.rate != null ? t.rate : t.rateSnapshot != null ? t.rateSnapshot : (t.name?.toLowerCase() === 'hemoglobin' ? 500 : 0)),
+            testType: t.testType,
+          }))
+      );
+
+  const computedSubtotal = lineItems.reduce((sum, item) => sum + Number(item.rate || 0), 0);
+  const fee = computedSubtotal > 0 ? computedSubtotal : Number(report.fee || 0);
   const discount = Number(report.discount || 0);
   const paid = Number(report.paid || 0);
   const netFee = Math.max(0, fee - discount);
   const due = Math.max(0, netFee - paid);
-  const tests = report.tests || [];
-  const perTest = tests.length ? fee / tests.length : fee;
   const invoiceNo = `CCPL/INV/${String(report.number || '')
     .replace(/\D/g, '')
     .padStart(4, '0')}`;
@@ -32,11 +56,11 @@ export default function InvoiceDocument({
 
   const PAGE_SIZE = 10;
   const chunks = [];
-  if (tests.length <= PAGE_SIZE) {
-    chunks.push(tests);
+  if (lineItems.length <= PAGE_SIZE) {
+    chunks.push(lineItems);
   } else {
-    for (let i = 0; i < tests.length; i += PAGE_SIZE) {
-      chunks.push(tests.slice(i, i + PAGE_SIZE));
+    for (let i = 0; i < lineItems.length; i += PAGE_SIZE) {
+      chunks.push(lineItems.slice(i, i + PAGE_SIZE));
     }
   }
   if (!chunks.length) chunks.push([]);
@@ -53,7 +77,16 @@ export default function InvoiceDocument({
             }`}
           >
             <header className="invoice-header">
-              <div className="invoice-mark">CC</div>
+              <div className="invoice-mark">
+                <img
+                  src="/cell-cited-logo.jpg"
+                  alt={labName || 'Cell Cited'}
+                  className="profile-avatar-img invoice-logo-img"
+                  onError={(e) => {
+                    e.currentTarget.src = `${import.meta.env.BASE_URL}cell-cited-logo.jpg`;
+                  }}
+                />
+              </div>
               <div>
                 <h2>{labName}</h2>
                 <p>{labAddress}</p>
@@ -106,39 +139,40 @@ export default function InvoiceDocument({
                 </p>
               </div>
             </section>
-            <table className="invoice-table">
-              <thead>
-                <tr>
-                  <th>S.No.</th>
-                  <th>Laboratory service / investigation</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                {chunk.map((test, itemIdx) => {
-                  const globalIdx = index * PAGE_SIZE + itemIdx;
-                  return (
-                    <tr key={test.name}>
-                      <td>{globalIdx + 1}</td>
-                      <td>
-                        <b>{test.name}</b>
-                        <br />
-                        <small>Laboratory investigation</small>
-                      </td>
-                      <td>
-                        ₹
-                        {(globalIdx === tests.length - 1
-                          ? fee - perTest * (tests.length - 1)
-                          : perTest
-                        ).toFixed(2)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <div className="invoice-content-body">
+              <table className="invoice-table">
+                <thead>
+                  <tr>
+                    <th>S.No.</th>
+                    <th>Laboratory service / investigation</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chunk.map((item, itemIdx) => {
+                    const globalIdx = index * PAGE_SIZE + itemIdx;
+                    return (
+                      <tr key={`${item.name}-${globalIdx}`}>
+                        <td>{globalIdx + 1}</td>
+                        <td>
+                          <b>{item.name}</b>
+                          <br />
+                          <small>
+                            {item.testType === 'panel'
+                              ? 'Laboratory Panel'
+                              : 'Laboratory Investigation'}
+                          </small>
+                        </td>
+                        <td>₹{Number(item.rate || 0).toFixed(2)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
             {isLast && (
-              <>
+              <div className="invoice-bottom-section">
                 <section className="invoice-summary">
                   <p>
                     <span>Subtotal</span>
@@ -177,7 +211,7 @@ export default function InvoiceDocument({
                     <b>Authorised Signatory</b>
                   </div>
                 </footer>
-              </>
+              </div>
             )}
           </article>
         );

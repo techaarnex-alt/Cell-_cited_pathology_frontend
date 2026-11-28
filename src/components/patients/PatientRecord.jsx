@@ -82,13 +82,37 @@ export default function PatientRecord() {
           <b>{recordPatient.registeredOn || '—'}</b>
         </div>
         <div>
+          <span>Collected on</span>
+          <b>{recordPatient.collectedOn || '—'}</b>
+        </div>
+        <div>
           <span>Referred by</span>
           <b>{recordPatient.reference || 'Self'}</b>
+        </div>
+        <div>
+          <span>Email</span>
+          <b>{recordPatient.email || '—'}</b>
+        </div>
+        <div>
+          <span>Aadhaar</span>
+          <b>{recordPatient.aadhaar || '—'}</b>
         </div>
         <div>
           <span>Address</span>
           <b>{recordPatient.address || '—'}</b>
         </div>
+        {recordPatient.patientHistory && (
+          <div style={{ gridColumn: '1 / -1' }}>
+            <span>Patient history</span>
+            <b>{recordPatient.patientHistory}</b>
+          </div>
+        )}
+        {recordPatient.onlineReportRequested && (
+          <div>
+            <span>Online report</span>
+            <b style={{ color: '#047857' }}>Requested ✓</b>
+          </div>
+        )}
       </section>
 
       <section className="panel">

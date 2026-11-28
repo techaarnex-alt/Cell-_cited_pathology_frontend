@@ -16,9 +16,14 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
     gender: '',
     mobile: '',
     address: '',
+    email: '',
+    aadhaar: '',
+    patientHistory: '',
+    onlineReportRequested: false,
     doctorId: '',
     sampleType: 'Blood',
     registeredOn: '',
+    collectedOn: '',
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -39,9 +44,14 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
         gender: patient.gender || '',
         mobile: patient.mobile || '',
         address: patient.address || '',
+        email: patient.email || '',
+        aadhaar: patient.aadhaar || '',
+        patientHistory: patient.patientHistory || '',
+        onlineReportRequested: Boolean(patient.onlineReportRequested),
         doctorId: docId,
         sampleType: patient.sampleType || 'Blood',
         registeredOn: patient.registeredOn || '',
+        collectedOn: patient.collectedOn || '',
       });
       setError('');
     }
@@ -103,9 +113,14 @@ export default function EditPatientModal({ patient, isOpen, onClose }) {
         gender: formData.gender,
         mobile: formData.mobile.trim(),
         address: formData.address.trim(),
+        email: formData.email ? formData.email.trim() : '',
+        aadhaar: formData.aadhaar ? formData.aadhaar.trim() : '',
+        patientHistory: formData.patientHistory ? formData.patientHistory.trim() : '',
+        onlineReportRequested: Boolean(formData.onlineReportRequested),
         doctorId: formData.doctorId || null,
         sampleType: formData.sampleType || 'Blood',
         registeredOn: formData.registeredOn.trim(),
+        collectedOn: formData.collectedOn ? formData.collectedOn.trim() : '',
       });
       onClose();
     } catch (err) {

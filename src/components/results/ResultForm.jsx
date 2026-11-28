@@ -309,6 +309,22 @@ export default function ResultForm({ report, patient, onFinalise }) {
                   </td>
                   <td>
                     <b>{test.name}</b>
+                    {test.parentPanelName && (
+                      <span
+                        style={{
+                          display: 'inline-block',
+                          marginLeft: '6px',
+                          fontSize: '10px',
+                          padding: '1px 5px',
+                          borderRadius: '3px',
+                          background: '#e0e7ff',
+                          color: '#3730a3',
+                          fontWeight: 600,
+                        }}
+                      >
+                        {test.parentPanelName}
+                      </span>
+                    )}
                     {test.category && (
                       <small className="result-test-category">
                         {test.category}
@@ -316,15 +332,29 @@ export default function ResultForm({ report, patient, onFinalise }) {
                     )}
                   </td>
                   <td>
-                    <input
-                      name={test.name}
-                      value={currentVals.value}
-                      onChange={(e) =>
-                        updateFieldValue(rowKey, 'value', e.target.value)
-                      }
-                      placeholder="Enter result"
-                      required
-                    />
+                    {test.testType === 'document' || test.inputType === 'multiline' ? (
+                      <textarea
+                        name={test.name}
+                        value={currentVals.value}
+                        rows={3}
+                        onChange={(e) =>
+                          updateFieldValue(rowKey, 'value', e.target.value)
+                        }
+                        placeholder="Enter narrative findings..."
+                        style={{ width: '100%', fontSize: '12px', padding: '6px' }}
+                        required
+                      />
+                    ) : (
+                      <input
+                        name={test.name}
+                        value={currentVals.value}
+                        onChange={(e) =>
+                          updateFieldValue(rowKey, 'value', e.target.value)
+                        }
+                        placeholder="Enter result"
+                        required
+                      />
+                    )}
                   </td>
                   <td>
                     <input

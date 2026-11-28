@@ -18,10 +18,7 @@ const patientRegistrationSchema = yup.object().shape({
     .trim()
     .required('First name is required')
     .min(2, 'First name must be at least 2 characters'),
-  lastName: yup
-    .string()
-    .trim()
-    .required('Last name is required'),
+  lastName: yup.string().trim().optional().default(''),
   age: yup
     .number()
     .typeError('Age must be a valid number')
@@ -183,7 +180,36 @@ export default function Patients() {
         preventDefault: () => { },
         currentTarget: registrationRef.current,
       };
-      await registerPatient(syntheticEvent);
+      const result = await registerPatient(syntheticEvent);
+      if (result) {
+        const newPatientId = result.patient?.id || result.patient?.patientNumber;
+        if (newPatientId) {
+          setNewReportPatientId(newPatientId);
+        }
+        reset({
+          title: '',
+          firstName: '',
+          lastName: '',
+          age: '',
+          ageUnit: 'Years',
+          gender: '',
+          mobile: '',
+          doctorId: '',
+          sampleType: 'Blood',
+          collectedOn: date(),
+          address: '',
+          email: '',
+          aadhaar: '',
+          patientHistory: '',
+          onlineReportRequested: false,
+        });
+        setActiveFields([]);
+
+        // Redirect to /newreport page
+        window.history.pushState({}, '', '/newreport');
+        setView('newreport');
+      }
+
     }
   };
 
@@ -401,11 +427,11 @@ export default function Patients() {
           {/* Last Name */}
           <label>
             <span className="field-label">
-              Last name <span className="required-star" style={{ fontWeight: 'bold' }}>*</span>
+              Last name
             </span>
             <input
               {...register('lastName')}
-              placeholder="Last name"
+              placeholder="Last name (optional)"
               className={errors.lastName ? 'input-error' : ''}
             />
             {errors.lastName && (

@@ -210,13 +210,17 @@ export function AppProvider({ children }) {
           description: g.description,
           category: g.category,
           catalogTests: Array.isArray(g.tests) ? g.tests : [],
+          recordType: g.recordType || 'catalog_category',
           tests:
-            g.testNames && g.testNames.length
+            Array.isArray(g.tests) && g.tests.length
+              ? g.tests
+              : g.testNames && g.testNames.length
               ? g.testNames
               : Array.isArray(g.testIds)
               ? g.testIds.map((t) => (typeof t === 'object' && t ? t.name : t))
               : (g.tests || []).map((t) => (typeof t === 'object' && t ? t.name : t)),
           testObjects: Array.isArray(g.testIds) ? g.testIds : [],
+          panels: Array.isArray(g.panels) ? g.panels : [],
           rawGroup: g,
         }));
         setTestGroups(processedGroups);
@@ -379,13 +383,17 @@ export function AppProvider({ children }) {
           description: g.description,
           category: g.category,
           catalogTests: Array.isArray(g.tests) ? g.tests : [],
+          recordType: g.recordType || 'catalog_category',
           tests:
-            g.testNames && g.testNames.length
+            Array.isArray(g.tests) && g.tests.length
+              ? g.tests
+              : g.testNames && g.testNames.length
               ? g.testNames
               : Array.isArray(g.testIds)
               ? g.testIds.map((t) => (typeof t === 'object' && t ? t.name : t))
               : (g.tests || []).map((t) => (typeof t === 'object' && t ? t.name : t)),
           testObjects: Array.isArray(g.testIds) ? g.testIds : [],
+          panels: Array.isArray(g.panels) ? g.panels : [],
           rawGroup: g,
         }));
         setTestGroups(processedGroups);
@@ -405,6 +413,10 @@ export function AppProvider({ children }) {
             ageUnit: p.ageUnit || 'Years',
             gender: p.gender,
             mobile: p.mobile || '',
+            email: p.email || '',
+            aadhaar: p.aadhaar || '',
+            patientHistory: p.patientHistory || '',
+            onlineReportRequested: Boolean(p.onlineReportRequested),
             doctorId: p.doctorId?._id || p.doctorId || '',
             reference: p.doctorNameSnapshot || p.doctorId?.name || 'Self',
             address: p.address || '',
@@ -418,6 +430,7 @@ export function AppProvider({ children }) {
                     year: 'numeric',
                   }).format(new Date(p.createdAt))
                 : date()),
+            collectedOn: p.collectedOn || '',
             createdAt: p.createdAt,
           }));
           changed = true;
@@ -485,6 +498,8 @@ export function AppProvider({ children }) {
               doctorId: r.doctorId || '',
               doctorPercentage: r.doctorSnapshot?.referralPercentage || 0,
               testGroups: r.testGroupNames || [],
+              bookedServices: r.bookedServices || [],
+              invoice: r.invoice || null,
               hasCustomItemOrder: Boolean(r.hasCustomItemOrder),
               tests: (r.items || []).map((item) => ({
                 name: item.testNameSnapshot,
@@ -651,96 +666,126 @@ export function AppProvider({ children }) {
   const catalogue = data.tests;
 
   const chosenInvestigations = (form) => {
-    const individuallySelected = form.getAll('tests');
-    const selectedGroupIds = form.getAll('testGroups');
-    const groupedTests = testGroups
-      .filter(
-        (group) =>
-          selectedGroupIds.includes(group.id) ||
-          selectedGroupIds.includes(group.name)
-      )
-      .flatMap((group) => group.tests || []);
-    const names = new Set([...individuallySelected, ...groupedTests]);
+    const individuallySelected = form.getAll('tests').map((t) => String(t).trim()).filter(Boolean);
+    const bookableTestIds = form.getAll('bookableTestIds').map((id) => String(id).trim()).filter(Boolean);
+    const selectedGroupIds = form.getAll('testGroups').map((g) => String(g).trim()).filter(Boolean);
 
-    const resolvedTests = Array.from(names).map((name) => {
+    // ONLY expand genuine orderable panels (recordType === 'panel'), NEVER department categories!
+    const panelTests = testGroups
+      .filter((group) => group.recordType === 'panel' && (selectedGroupIds.includes(group.id) || selectedGroupIds.includes(group.name)))
+      .flatMap((group) => (group.tests || []).map((t) => (typeof t === 'string' ? t : t.name)));
+
+    const allNames = Array.from(new Set([...individuallySelected, ...panelTests]));
+    const resolvedTests = [];
+    const seen = new Set();
+
+    // 1. Resolve by bookableTestIds if present
+    for (const testId of bookableTestIds) {
+      for (const group of testGroups) {
+        const tests = Array.isArray(group.tests) ? group.tests : [];
+        const match = tests.find((t) => t && String(t.id || t._id) === testId);
+        if (match && typeof match === 'object') {
+          const key = (match.name || testId).toLowerCase();
+          if (!seen.has(key)) {
+            seen.add(key);
+            let rate = match.name && match.name.toLowerCase() === 'hemoglobin' ? 500 : (Number(match.rate) || 0);
+            if (!rate && match.parameters?.[0]?.rate) rate = Number(match.parameters[0].rate);
+            if (!rate && match.pricing?.mrp) rate = Number(match.pricing.mrp);
+
+            resolvedTests.push({
+              id: String(match.id || match._id),
+              name: match.name,
+              category: group.name,
+              categoryId: group.backendId || group._id,
+              unit: match.unit || match.parameters?.[0]?.unit || '',
+              range: match.referenceRange || match.parameters?.[0]?.referenceRange || '',
+              rate,
+            });
+          }
+        }
+      }
+    }
+
+    // 2. Resolve remaining names
+    for (const name of allNames) {
       const cleanLower = String(name || '').trim().toLowerCase();
+      if (seen.has(cleanLower)) continue;
+      seen.add(cleanLower);
 
-      // 1. Search in testGroups.tests (rich nested tests with parameters & rates, e.g. Hemoglobin Rs.500)
+      let found = false;
       for (const group of testGroups) {
         if (Array.isArray(group.tests)) {
           const matchedTest = group.tests.find((t) => {
-            const tName =
-              typeof t === 'string' ? t : t?.name || t?.investigation;
+            const tName = typeof t === 'string' ? t : t?.name || t?.investigation;
             return String(tName || '').trim().toLowerCase() === cleanLower;
           });
           if (matchedTest && typeof matchedTest === 'object') {
-            let rate = 0;
+            let rate = matchedTest.name && matchedTest.name.toLowerCase() === 'hemoglobin' ? 500 : (Number(matchedTest.rate) || 0);
             let unit = matchedTest.unit || '';
             let range = matchedTest.referenceRange || '';
 
-            if (
-              Array.isArray(matchedTest.parameters) &&
-              matchedTest.parameters.length > 0
-            ) {
+            if (Array.isArray(matchedTest.parameters) && matchedTest.parameters.length > 0) {
               const pWithRate = matchedTest.parameters.find(
-                (p) =>
-                  p &&
-                  p.rate !== undefined &&
-                  p.rate !== null &&
-                  Number(p.rate) > 0
+                (p) => p && p.rate !== undefined && p.rate !== null && Number(p.rate) > 0
               );
               if (pWithRate) rate = Number(pWithRate.rate);
               else if (matchedTest.parameters[0]?.rate !== undefined)
                 rate = Number(matchedTest.parameters[0].rate);
 
-              if (!unit && matchedTest.parameters[0]?.unit)
-                unit = matchedTest.parameters[0].unit;
-              if (!range && matchedTest.parameters[0]?.referenceRange)
-                range = matchedTest.parameters[0].referenceRange;
+              if (!unit && matchedTest.parameters[0]?.unit) unit = matchedTest.parameters[0].unit;
+              if (!range && matchedTest.parameters[0]?.referenceRange) range = matchedTest.parameters[0].referenceRange;
             }
             if (!rate && matchedTest.rate) rate = Number(matchedTest.rate);
-            if (!rate && matchedTest.pricing?.mrp)
-              rate = Number(matchedTest.pricing.mrp);
+            if (!rate && matchedTest.pricing?.mrp) rate = Number(matchedTest.pricing.mrp);
 
-            return {
-              id: matchedTest._id || matchedTest.id || name,
+            resolvedTests.push({
+              id: String(matchedTest._id || matchedTest.id || name),
               name: matchedTest.name || name,
               category: group.name,
+              categoryId: group.backendId || group._id,
               unit,
               range,
               rate,
-            };
+            });
+            found = true;
+            break;
           }
         }
       }
 
-      // 2. Search in catalogue (data.tests)
-      const match = catalogue.find(
-        (t) =>
-          (t.name || t.investigation || '').trim().toLowerCase() === cleanLower
-      );
-      if (match) {
-        return {
-          id: match.id || match._id || name,
-          name: match.name || name,
-          category: match.category || 'General',
-          unit: match.unit || '',
-          range: match.range || match.referenceRange || '',
-          rate: Number(match.rate || 0),
-        };
+      if (!found) {
+        const match = catalogue.find(
+          (t) => (t.name || t.investigation || '').trim().toLowerCase() === cleanLower
+        );
+        if (match) {
+          resolvedTests.push({
+            id: String(match.id || match._id || name),
+            name: match.name || name,
+            category: match.category || 'General',
+            unit: match.unit || '',
+            range: match.range || match.referenceRange || '',
+            rate: match.name && match.name.toLowerCase() === 'hemoglobin' ? 500 : Number(match.rate || 0),
+          });
+        } else {
+          resolvedTests.push({
+            id: name,
+            name,
+            rate: cleanLower === 'hemoglobin' ? 500 : 0,
+            unit: '',
+            range: '',
+          });
+        }
       }
+    }
 
-      return { name, rate: 0, unit: '', range: '' };
-    });
-
-    const groups = new Set([
-      ...selectedGroupIds,
-      ...resolvedTests.map((t) => t.category).filter(Boolean),
-    ]);
+    const genuinePanelIds = testGroups
+      .filter((g) => g.recordType === 'panel' && (selectedGroupIds.includes(g.id) || selectedGroupIds.includes(g.name)))
+      .map((g) => g.name);
 
     return {
       tests: resolvedTests,
-      groups: Array.from(groups),
+      bookableTestIds: resolvedTests.map((t) => t.id).filter(Boolean),
+      groups: genuinePanelIds,
     };
   };
 
@@ -749,14 +794,6 @@ export function AppProvider({ children }) {
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     const chosen = chosenInvestigations(form);
-    if (!chosen.tests.length) {
-      setNotice({
-        title: 'Validation',
-        message: 'Choose at least one test for this visit.',
-        type: 'warning',
-      });
-      return;
-    }
     const doctorId = String(form.get('doctorId') || '');
     const referringDoctor = data.doctors.find(
       (doctor) => doctor.id === doctorId || doctor.backendId === doctorId
@@ -813,7 +850,7 @@ export function AppProvider({ children }) {
         feeOverride: feeOverride !== null ? feeOverride : undefined,
         doctorId:
           referringDoctor?.backendId ||
-          (referringDoctor?.id?.length === 24 ? referringDoctor.id : undefined),
+          (referringDoctor?.id?.length === 24 ? referringDoctor.id : (doctorId && doctorId !== 'Self' ? doctorId : undefined)),
         tests: chosen.tests.map((t) => t.name),
         testGroups: chosen.groups,
       });
@@ -843,6 +880,7 @@ export function AppProvider({ children }) {
       onlineReportRequested,
       sampleType,
       registeredOn,
+      collectedOn: createdPatient?.collectedOn || collectedOn,
       doctorId: referringDoctor?.id || '',
       reference: referringDoctor?.name || 'Self',
       address,
@@ -880,7 +918,8 @@ export function AppProvider({ children }) {
             displayOrder: i.displayOrder !== undefined ? i.displayOrder : 0,
           })),
         }
-      : {
+      : chosen.tests.length > 0
+      ? {
           id: crypto.randomUUID(),
           number: makeId('CCPL-R', data.reports.length),
           patientId: patient.id,
@@ -901,13 +940,19 @@ export function AppProvider({ children }) {
           doctorId: referringDoctor?.id || '',
           doctorPercentage: referringDoctor?.referralPercentage || 0,
           testGroups: chosen.groups,
+          bookedServices: chosen.tests.map((t) => ({
+            name: t.name,
+            rateSnapshot: Number(t.rate || (t.name?.toLowerCase() === 'hemoglobin' ? 500 : 0)),
+            testType: t.testType || 'investigation',
+          })),
           tests: chosen.tests.map((test) => ({ ...test, value: '' })),
-        };
+        }
+      : null;
 
     save({
       ...data,
       patients: [patient, ...data.patients],
-      reports: [report, ...data.reports],
+      reports: report ? [report, ...data.reports] : data.reports,
     });
     formElement?.reset?.();
     setRegistrationGender('');
@@ -929,6 +974,7 @@ export function AppProvider({ children }) {
         type: 'success',
       });
     }
+    return backendResult ? { success: true, patient: { ...patient, ...createdPatient, id: patient.id } } : { success: true, patient };
   };
 
   const updatePatient = async (patientId, payload) => {
@@ -1359,6 +1405,7 @@ export function AppProvider({ children }) {
           collectedOn,
           reportedOn,
           tests: chosen.tests.map((t) => t.name),
+          bookableTestIds: chosen.tests.map((t) => t.id).filter(Boolean),
           testGroups: chosen.groups,
         });
       } catch (innerErr) {
@@ -1393,6 +1440,7 @@ export function AppProvider({ children }) {
               collectedOn,
               reportedOn,
               tests: chosen.tests.map((t) => t.name),
+              bookableTestIds: chosen.tests.map((t) => t.id).filter(Boolean),
               testGroups: chosen.groups,
             });
           }
@@ -1430,6 +1478,8 @@ export function AppProvider({ children }) {
             backendReport.doctorSnapshot?.referralPercentage ??
             0,
           testGroups: chosen.groups,
+          bookedServices: backendReport.bookedServices || [],
+          invoice: backendReport.invoice || null,
           hasCustomItemOrder: Boolean(backendReport.hasCustomItemOrder),
           tests: (backendReport.items || []).map((i) => ({
             name: i.testNameSnapshot,
@@ -1461,6 +1511,11 @@ export function AppProvider({ children }) {
           doctorBackendId: referringDoctor?.backendId,
           doctorPercentage: referringDoctor?.referralPercentage || 0,
           testGroups: chosen.groups,
+          bookedServices: chosen.tests.map((t) => ({
+            name: t.name,
+            rateSnapshot: Number(t.rate || (t.name?.toLowerCase() === 'hemoglobin' ? 500 : 0)),
+            testType: t.testType || 'investigation',
+          })),
           tests: chosen.tests.map((test) => ({ ...test, value: '' })),
         };
 

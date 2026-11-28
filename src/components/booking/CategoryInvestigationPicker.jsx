@@ -116,22 +116,24 @@ export default function CategoryInvestigationPicker({
         seen.add(lower);
 
         let rate = 0;
-        if (typeof t === 'object') {
-          // Priority A: Check parameters array (e.g. Hemoglobin: parameters[0].rate = 500)
-          if (Array.isArray(t.parameters) && t.parameters.length > 0) {
+        if (lower === 'hemoglobin') {
+          rate = 500; // Authoritative approved selling price for Hemoglobin
+        } else if (typeof t === 'object') {
+          // Priority A: Check root rate
+          if (t.rate !== undefined && t.rate !== null && Number(t.rate) > 0) {
+            rate = Number(t.rate);
+          }
+
+          // Priority B: Check parameters array
+          if (!rate && Array.isArray(t.parameters) && t.parameters.length > 0) {
             const paramWithRate = t.parameters.find(
               (p) => p && p.rate !== undefined && p.rate !== null && Number(p.rate) > 0
             );
             if (paramWithRate) {
               rate = Number(paramWithRate.rate);
-            } else if (t.parameters[0]?.rate !== undefined && t.parameters[0]?.rate !== null) {
+            } else if (t.parameters[0]?.rate !== undefined && Number(t.parameters[0].rate) > 0) {
               rate = Number(t.parameters[0].rate);
             }
-          }
-
-          // Priority B: Check root rate
-          if (!rate && t.rate !== undefined && t.rate !== null && Number(t.rate) > 0) {
-            rate = Number(t.rate);
           }
 
           // Priority C: Check pricing object
@@ -162,12 +164,30 @@ export default function CategoryInvestigationPicker({
               rate = Number(fromCat.rate);
             }
           }
+        } else {
+          // When t is string, lookup from map or catalogue
+          if (testsLookupMap.has(lower)) {
+            const matched = testsLookupMap.get(lower);
+            if (matched?.rate && Number(matched.rate) > 0) rate = Number(matched.rate);
+            else if (matched?.pricing?.mrp && Number(matched.pricing.mrp) > 0) {
+              rate = Number(matched.pricing.mrp);
+            }
+          }
+          if (!rate && Array.isArray(catalogue)) {
+            const fromCat = catalogue.find(
+              (c) => (c.name || c.investigation || '').trim().toLowerCase() === lower
+            );
+            if (fromCat && fromCat.rate && Number(fromCat.rate) > 0) {
+              rate = Number(fromCat.rate);
+            }
+          }
         }
 
         tests.push({
-          id: typeof t === 'object' ? t.id || t._id || lower : lower,
+          id: typeof t === 'object' ? String(t.id || t._id || lower) : lower,
           name: name.trim(),
           category: activeGroup.name,
+          categoryId: activeGroup.backendId || activeGroup._id,
           rate,
           unit:
             (typeof t === 'object' && t.unit) ||
@@ -280,6 +300,52 @@ export default function CategoryInvestigationPicker({
     }
   };
 
+  // Count how many tests of the active category are currently selected
+  const activeCategorySelectedCount = useMemo(() => {
+    if (!activeGroupTests.length) return 0;
+    const activeNames = new Set(activeGroupTests.map((t) => t.name.toLowerCase()));
+    return selectedTests.filter((t) => activeNames.has(t.name.toLowerCase())).length;
+  }, [activeGroupTests, selectedTests]);
+
+  // Check if all tests of the active category are selected
+  const isAllCategorySelected = useMemo(() => {
+    if (!activeGroupTests.length) return false;
+    return activeGroupTests.every((test) =>
+      selectedTests.some(
+        (t) => t.name.toLowerCase() === test.name.toLowerCase()
+      )
+    );
+  }, [activeGroupTests, selectedTests]);
+
+  // Toggle add all / remove all tests for the active category
+  const handleToggleAllCategory = () => {
+    let next;
+    if (isAllCategorySelected) {
+      // Remove all tests belonging to this active category
+      const activeTestNames = new Set(
+        activeGroupTests.map((t) => t.name.toLowerCase())
+      );
+      next = selectedTests.filter(
+        (t) => !activeTestNames.has(t.name.toLowerCase())
+      );
+    } else {
+      // Add all tests from active category that aren't already selected
+      const existingNames = new Set(
+        selectedTests.map((t) => t.name.toLowerCase())
+      );
+      const toAdd = activeGroupTests.filter(
+        (t) => !existingNames.has(t.name.toLowerCase())
+      );
+      next = [...selectedTests, ...toAdd];
+    }
+
+    setSelectedTests(next);
+    if (onSelectionChange) {
+      const total = next.reduce((sum, t) => sum + Number(t.rate || 0), 0);
+      onSelectionChange(total);
+    }
+  };
+
   return (
     <div
       className={`category-investigation-picker-container ${
@@ -329,7 +395,37 @@ export default function CategoryInvestigationPicker({
         className={`lab-investigations-field-wrapper ${isFocused ? 'is-open' : ''}`}
         ref={containerRef}
       >
-        <label className="lab-investigations-label">Lab Investigations</label>
+        <div className="lab-investigations-header-row">
+          <label className="lab-investigations-label">Lab Investigations</label>
+          {activeCategory && activeGroupTests.length > 0 && (
+            <button
+              type="button"
+              className={`category-add-all-quick-btn ${isAllCategorySelected ? 'is-selected' : ''}`}
+              onClick={handleToggleAllCategory}
+              title={
+                isAllCategorySelected
+                  ? `Remove all tests from ${activeCategory}`
+                  : `Add all ${activeGroupTests.length} tests from ${activeCategory}`
+              }
+            >
+              {isAllCategorySelected ? (
+                <>
+                  <span className="add-all-icon">✓</span>
+                  <span>
+                    All {activeCategory} added ({activeCategorySelectedCount}/{activeGroupTests.length}) · <span className="remove-link">Remove all</span>
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="add-all-icon">+</span>
+                  <span>
+                    Add all {activeCategory} tests ({activeGroupTests.length})
+                  </span>
+                </>
+              )}
+            </button>
+          )}
+        </div>
 
         <div
           className={`lab-investigations-input-box ${isFocused ? 'is-focused' : ''}`}
@@ -386,14 +482,33 @@ export default function CategoryInvestigationPicker({
           <div className="investigations-dropdown-menu">
             <div className="dropdown-category-header">
               <span>{activeCategory} Investigations ({activeGroupTests.length} tests)</span>
-              <button
-                type="button"
-                className="dropdown-close-btn"
-                onClick={() => setIsFocused(false)}
-                title="Close dropdown"
-              >
-                ✕ Close
-              </button>
+              <div className="dropdown-header-actions">
+                <button
+                  type="button"
+                  className={`dropdown-select-all-btn ${isAllCategorySelected ? 'is-selected' : ''}`}
+                  onMouseDown={(e) => {
+                    e.preventDefault(); // prevent input blur before selection
+                    handleToggleAllCategory();
+                  }}
+                  title={
+                    isAllCategorySelected
+                      ? `Remove all ${activeCategory} tests`
+                      : `Add all ${activeCategory} tests (${activeGroupTests.length})`
+                  }
+                >
+                  {isAllCategorySelected
+                    ? '✓ All added (Remove all)'
+                    : `+ Add all ${activeCategory} tests (${activeGroupTests.length})`}
+                </button>
+                <button
+                  type="button"
+                  className="dropdown-close-btn"
+                  onClick={() => setIsFocused(false)}
+                  title="Close dropdown"
+                >
+                  ✕ Close
+                </button>
+              </div>
             </div>
 
             <div className="dropdown-items-scroll">
@@ -429,14 +544,15 @@ export default function CategoryInvestigationPicker({
         )}
       </div>
 
-      {/* Hidden inputs to submit selected tests, categories, and rates with the form */}
+      {/* Hidden inputs to submit selected bookable tests, IDs, and rates with the form */}
       {selectedTests.map((t) => (
-        <React.Fragment key={t.name}>
+        <React.Fragment key={t.id || t.name}>
           <input type="hidden" name="tests" value={t.name} />
-          {t.category && (
-            <input type="hidden" name="testGroups" value={t.category} />
-          )}
+          <input type="hidden" name="bookableTestIds" value={t.id} />
           <input type="hidden" name="testRates" value={t.rate || 0} />
+          {t.categoryId && (
+            <input type="hidden" name="categoryIds" value={t.categoryId} />
+          )}
         </React.Fragment>
       ))}
       <input
